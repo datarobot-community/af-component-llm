@@ -1,28 +1,31 @@
+# Copyright 2025 DataRobot, Inc.
 #
-# Copyright 2024 DataRobot, Inc. and its affiliates.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# All rights reserved.
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# DataRobot, Inc. Confidential.
-#
-# This is unpublished proprietary source code of DataRobot, Inc.
-# and its affiliates.
-#
-# The copyright notice above does not evidence any actual or intended
-# publication of such source code.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import logging
 from types import SimpleNamespace
+from typing import Any
 
 import pandas as pd
 
 # DRUM should be present in the latest moderation environment
 from datarobot_drum import RuntimeParameters
 from litellm import completion
+from openai.types.chat import CompletionCreateParams
 
 logger = logging.getLogger(__name__)
 
 
-def load_model(code_dir):
+def load_model(code_dir: str) -> SimpleNamespace:
     logger.info("Loading Runtime Parameters..")
 
     model = RuntimeParameters.get("model")
@@ -35,7 +38,7 @@ def load_model(code_dir):
     return SimpleNamespace(**locals())
 
 
-def _get_genai_completion(**kwargs):
+def _get_genai_completion(**kwargs: Any) -> Any:
     return completion(
         clientId=kwargs.get("clientId"),
         model=kwargs.get("model"),
@@ -72,11 +75,11 @@ def _get_genai_completion(**kwargs):
         api_version=kwargs.get("api_version"),
         api_key=kwargs.get("api_key"),
         model_list=kwargs.get("model_list"),
-        thinking=kwargs.get("thinking")
+        thinking=kwargs.get("thinking"),
     )
 
 
-def score(data, model, **kwargs):
+def score(data: pd.DataFrame, model: SimpleNamespace, **kwargs: Any) -> pd.DataFrame:
     predictions = list()
 
     for _, row in data.iterrows():
@@ -92,7 +95,11 @@ def score(data, model, **kwargs):
     return pd.DataFrame.from_dict({"resultText": predictions})
 
 
-def chat(completion_create_params, model, **kwargs):
+def chat(
+    completion_create_params: CompletionCreateParams,
+    model: SimpleNamespace,
+    **kwargs: Any,
+) -> Any:
     return _get_genai_completion(
         model=model.model,
         clientId=model.client_id,

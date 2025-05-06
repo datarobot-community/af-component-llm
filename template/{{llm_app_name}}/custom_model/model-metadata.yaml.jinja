@@ -2,23 +2,19 @@
 name: {{llm_app_name}} Model
 type: inference
 targetType: textgeneration
-
 runtimeParameterDefinitions:
   - fieldName: model
     type: string
     description: The name of the LLM and provider to use.
-    defaultValue: "datarobot/azure/gpt-4"
-
+    defaultValue: "{{llm_app_model_name}}"
   - fieldName: api_key
     type: credential
-    description: An HTTP Basic credential that contains the Endpoint's API key in the password field (the username field is ignored).
-
+    description: An HTTP Basic credential that contains the Endpoint's API key in the password field.
   - fieldName: base_url
     type: string
     description: The base url to use.
-    defaultValue: "https://app.datarobot.com"
-
+    defaultValue: https://app.datarobot.com
   - fieldName: client_id
     type: string
     description: Name of the execution envrionment
-    defaultValue: "custom-model"
+    defaultValue: custom-model

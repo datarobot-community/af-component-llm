@@ -1,7 +1,9 @@
 # This Dockerfile.local can built with the following command:
-#   > docker build -f Dockerfile.local -t python311-genai-local-dev .
-# where the 'python311-genai-local-dev' is the name of the image that will be created.
+#   > docker build -f Dockerfile -t python311-genai-dev .
+# where the 'python311-genai-dev' is the name of the image that will be created.
 
+# This reproduces a open source variant of https://images.chainguard.dev/directory/image/python
+# hadolint ignore=DL3007
 FROM cgr.dev/chainguard/wolfi-base:latest AS chainguard_python_dev
 
 ARG PYTHON_VERSION=3.11
@@ -44,6 +46,7 @@ FROM chainguard_python_dev AS base
 
 ENV VIRTUAL_ENV=/opt/venv
 
+# hadolint ignore=DL3045
 COPY requirements.txt requirements.txt
 
 RUN sh -c "python -m venv ${VIRTUAL_ENV} && \

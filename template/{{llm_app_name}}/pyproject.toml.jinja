@@ -6,9 +6,8 @@ description = "{{llm_app_name}} LLM"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "datarobot>=3.7.0",
     "datarobot-drum>=1.16.12",
-    "openai>=1.76.2",
+    "litellm",
     "uvicorn>=0.22.0",
 ]
 
@@ -18,9 +17,6 @@ dev = [
     "pytest>=7.4.0",
     "ruff>=0.3.0",
     "mypy>=1.8.0",
-    "pydantic>=2.6.1",
-    "requests-mock>=1.12.1",
-    "pre-commit>=4.2.0",
     "yamlfix>=1.17.0",
 ]
 
@@ -144,3 +140,6 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = "datarobot.*"
 implicit_reexport = true
+
+[tool.uv.sources]
+litellm = { git = "https://github.com/datarobot-forks/litellm", branch = "mattn/add-datarobot-support-to-litellm" }
