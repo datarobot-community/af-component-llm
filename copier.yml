@@ -1,0 +1,25 @@
+# questions
+llm_app_name:
+  type: str
+  default: "web"
+  help: "The name/folder of your Agent Deployment. Required to use a python friendly name like agent or agent_backend"
+
+agent_template_framework:
+  type: str
+  default: "base"
+  help: "Supported frameworks: base, crewai, langgraph, llama_index"
+  
+base_answers_file:
+  type: str
+  default: ".datarobot/answers/base.yml"
+  help: "Path to the base component answers file"
+
+# Grab the base component answers to re-use answers
+_external_data:
+  base: "{{ base_answers_file }}"
+
+_subdirectory: template
+_answers_file: ".datarobot/answers/agent-{{ llm_app_name }}.yml"
+
+_exclude:
+    - "*.j2"
