@@ -2,7 +2,7 @@
 
 The LLM component provides the Buzok components required for configuring and using the LLM gateway or other LLM choices such as an already deployed model.
 
-The Agent Framework is component from [App Framework Studio](https://github.com/datarobot/app-framework-studio)
+The LLM component is global component from [App Framework Studio](https://github.com/datarobot/app-framework-studio) for other components to rely on
 
 
 * Part of https://datarobot.atlassian.net/wiki/spaces/BOPS/pages/6542032899/App+Framework+-+Studio
