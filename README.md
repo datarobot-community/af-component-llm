@@ -1,8 +1,6 @@
 # af-component-llm
 
-The agent template provides a set of utilities for constructing a single or multi-agent flow using platforms such
-as CrewAI, LangGraph, LlamaIndex, and others. The template is designed to be flexible and extensible, allowing you 
-to create a wide range of agent-based applications.
+The LLM component provides the Buzok components required for configuring and using the LLM gateway or other LLM choices such as an already deployed model.
 
 The Agent Framework is component from [App Framework Studio](https://github.com/datarobot/app-framework-studio)
 
