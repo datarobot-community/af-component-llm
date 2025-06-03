@@ -110,7 +110,7 @@ llm_deployment = CustomModelDeployment(
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEPLOYMENT_ID",
-        type="deployment",
+        type="string",
         value=llm_deployment.id,
     ),
 ]
