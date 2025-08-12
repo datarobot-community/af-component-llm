@@ -15,6 +15,7 @@
 import datarobot as dr
 import pulumi
 import pulumi_datarobot as datarobot
+from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.pulumi.custom_model_deployment import (
     CustomModelDeployment,
@@ -114,5 +115,5 @@ app_runtime_parameters = [
         value=llm_deployment.id,
     ),
 ]
-
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
+export("LLM_DEPLOYMENT_ID", llm_deployment.id)
