@@ -37,6 +37,14 @@ from .__{{ llm_app_name|lower|replace('-','_')}}__ import (
     verify_llm_gateway_model_availability,
 )
 
+__all__ = [
+    "custom_model_runtime_parameters",
+    "app_runtime_parameters",
+    "default_llm",
+    "{{llm_app_name}}_application_name",
+    "{{llm_app_name}}_resource_name"
+]
+
 REQUIRED_FEATURE_FLAGS = {
     "ENABLE_LLM_GATEWAY": True,
     "ENABLE_MLOPS": True,
@@ -53,11 +61,12 @@ __all__ = [
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
 default_llm: str = "azure/gpt-4o-2024-11-20"
+default_llm_id: str = "azure-openai-gpt-4-o"
 
 # Verify everything is working
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 verify_llm_gateway_model_availability(default_llm)
-verify_llm(f"datrobot/{default_llm}")
+verify_llm(f"datarobot/{default_llm}")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
@@ -66,7 +75,7 @@ playground = datarobot.Playground(
 
 llm_blueprint_args = LLMBlueprintArgs(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id=default_llm,
+    llm_id=default_llm_id,
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
@@ -144,6 +153,13 @@ app_runtime_parameters = [
         type="string",
         value=default_llm,
     ),
+]
+custom_model_runtime_parameters = [
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="LLM_DEPLOYMENT_ID",
+        type="string",
+        value=llm_deployment.id,
+    )
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)
