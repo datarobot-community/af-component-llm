@@ -15,6 +15,7 @@
 import datarobot as dr
 import pulumi
 import pulumi_datarobot as datarobot
+
 from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.pulumi.custom_model_deployment import (
@@ -30,6 +31,19 @@ from datarobot_pulumi_utils.schema.llms import (
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 
 from . import use_case
+from .__{{ llm_app_name|lower|replace('-','_')}}__ import (
+    validate_feature_flags,
+    verify_llm,
+    verify_llm_gateway_model_availability,
+)
+
+REQUIRED_FEATURE_FLAGS = {
+    "ENABLE_LLM_GATEWAY": True,
+    "ENABLE_MLOPS": True,
+    "ENABLE_CUSTOM_INFERENCE_MODEL": True,
+    "ENABLE_PUBLIC_NETWORK_ACCESS_FOR_ALL_CUSTOM_MODELS": True,
+    "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
+}
 
 __all__ = [
     "{{llm_app_name}}_application_name",
@@ -38,6 +52,12 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
+default_llm: str = "azure/gpt-4o-2024-11-20"
+
+# Verify everything is working
+validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+verify_llm_gateway_model_availability(default_llm)
+verify_llm(f"datrobot/{default_llm}")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
@@ -46,7 +66,7 @@ playground = datarobot.Playground(
 
 llm_blueprint_args = LLMBlueprintArgs(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id="{{llm_app_model_name}}",
+    llm_id=default_llm,
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
@@ -114,6 +134,17 @@ app_runtime_parameters = [
         type="string",
         value=llm_deployment.id,
     ),
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key="USE_DATAROBOT_LLM_GATEWAY",
+        type="boolean",
+        value=True,
+    ),
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
+        type="string",
+        value=default_llm,
+    ),
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)
+export("USE_DATAROBOT_LLM_GATEWAY", "1")

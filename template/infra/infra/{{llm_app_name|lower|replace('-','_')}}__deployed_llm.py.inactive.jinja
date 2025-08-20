@@ -1,0 +1,70 @@
+# Copyright 2025 DataRobot, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+This module is useful when you already have an LLM Deployed.
+It will pull it into the playground and use case
+"""
+from datarobot_pulumi_utils.pulumi import export
+import pulumi_datarobot as datarobot
+
+from . import use_case
+from .__{{ llm_app_name|lower|replace('-','_')}}__ import (
+    validate_feature_flags, verify_llm, verify_llm_gateway_model_availability
+)
+
+REQUIRED_FEATURE_FLAGS = {
+    "ENABLE_MLOPS": True,
+    "ENABLE_CUSTOM_INFERENCE_MODEL": True,
+    "ENABLE_PUBLIC_NETWORK_ACCESS_FOR_ALL_CUSTOM_MODELS": True,
+    "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
+}
+
+TEXTGEN_DEPLOYMENT_ID = os.environ.get("TEXTGEN_DEPLOYMENT_ID")
+
+default_llm: str = "my-llm"
+
+# Verify everything is working
+validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+verify_llm(deployment_id=TEXTGEN_DEPLOYMENT_ID)
+
+playground = datarobot.Playground(
+    use_case_id=use_case.id,
+    resource_name="LLM Playground " + {{llm_app_name}}_resource_name,
+)
+proxy_llm_deployment = datarobot.Deployment.get(
+    resource_name="Existing LLM Deployment", id=TEXTGEN_DEPLOYMENT_ID
+)
+llm_blueprint = ProxyLLMBlueprint(
+    use_case_id=use_case.id,
+    playground_id=playground.id,
+    proxy_llm_deployment_id=proxy_llm_deployment.id,
+    chat_model_name=default_llm,
+    **settings_generative.llm_blueprint_args.model_dump(mode="python"),
+)
+
+app_runtime_parameters = [
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key={{llm_app_name}}_application_name.upper() + "_DEPLOYMENT_ID",
+        type="string",
+        value=llm_deployment.id,
+    ),
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
+        type="string",
+        value=default_llm,
+    ),
+]
+
+pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
+export("LLM_DEPLOYMENT_ID", llm_deployment.id)
