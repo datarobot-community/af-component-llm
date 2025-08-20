@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import datarobot
 import pulumi
+import pulumi_datarobot
 from litellm import completion
 from litellm.utils import get_llm_provider
 
@@ -163,7 +164,7 @@ def _parse_credential_requirements_from_error(
 def create_datarobot_credentials_from_litellm(
     model_identifier: str,
     app_name: str,
-) -> List[datarobot.CustomModelRuntimeParameterValueArgs]:
+) -> List[pulumi_datarobot.CustomModelRuntimeParameterValueArgs]:
     """
     Create DataRobot credential objects from LiteLLM requirements.
 
@@ -194,14 +195,14 @@ def create_datarobot_credentials_from_litellm(
                 cred_key == "AWS_ACCESS_KEY_ID"
                 and "AWS_SECRET_ACCESS_KEY" in credentials
             ):
-                aws_credential = datarobot.AwsCredential(
+                aws_credential = pulumi_datarobot.AwsCredential(
                     resource_name=f"{app_name} AWS Credential [{stack_name}]",
                     aws_access_key_id=credentials["AWS_ACCESS_KEY_ID"],
                     aws_secret_access_key=credentials["AWS_SECRET_ACCESS_KEY"],
                     aws_session_token=credentials.get("AWS_SESSION_TOKEN"),
                 )
                 runtime_params.append(
-                    datarobot.CustomModelRuntimeParameterValueArgs(
+                    pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key="AWS_ACCOUNT",
                         type="credential",
                         value=aws_credential.id,
@@ -216,12 +217,12 @@ def create_datarobot_credentials_from_litellm(
                 with open(cred_value, "r") as f:
                     service_account_key = json.load(f)
 
-                google_credential = datarobot.GoogleCloudCredential(
+                google_credential = pulumi_datarobot.GoogleCloudCredential(
                     resource_name=f"{app_name} Google Credential [{stack_name}]",
                     gcp_key=json.dumps(service_account_key),
                 )
                 runtime_params.append(
-                    datarobot.CustomModelRuntimeParameterValueArgs(
+                    pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key="GOOGLE_SERVICE_ACCOUNT",
                         type="credential",
                         value=google_credential.id,
@@ -234,12 +235,12 @@ def create_datarobot_credentials_from_litellm(
         else:
             # Handle API key credentials
             if "key" in cred_key.lower() or "token" in cred_key.lower():
-                api_credential = datarobot.ApiTokenCredential(
+                api_credential = pulumi_datarobot.ApiTokenCredential(
                     resource_name=f"{app_name} {cred_key} [{stack_name}]",
                     api_token=cred_value,
                 )
                 runtime_params.append(
-                    datarobot.CustomModelRuntimeParameterValueArgs(
+                    pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key=param_key,
                         type="credential",
                         value=api_credential.id,
@@ -248,7 +249,7 @@ def create_datarobot_credentials_from_litellm(
             else:
                 # Handle string parameters (endpoints, versions, etc.)
                 runtime_params.append(
-                    datarobot.CustomModelRuntimeParameterValueArgs(
+                    pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key=param_key,
                         type="string",
                         value=cred_value,
@@ -319,7 +320,7 @@ def verify_llm_gateway_model_availability(model_id: str) -> None:
         )
 
 
-def verify_llm(model_id: str | None, deployment_id: str | None) -> None:
+def verify_llm(model_id: str | None, deployment_id: str | None=None) -> None:
     """
     Verify that the specified LLM is valid, available, and you can say hello
     """

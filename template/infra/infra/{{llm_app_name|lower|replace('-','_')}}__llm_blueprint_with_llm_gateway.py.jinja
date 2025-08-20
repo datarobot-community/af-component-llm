@@ -136,8 +136,8 @@ app_runtime_parameters = [
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="USE_DATAROBOT_LLM_GATEWAY",
-        type="boolean",
-        value=True,
+        type="string",
+        value="1",
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
