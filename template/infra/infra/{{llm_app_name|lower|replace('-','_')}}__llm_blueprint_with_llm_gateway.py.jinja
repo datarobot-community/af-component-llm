@@ -31,7 +31,7 @@ from datarobot_pulumi_utils.schema.llms import (
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 
 from . import use_case
-from .__{{ llm_app_name|lower|replace('-','_')}}__ import (
+from .{{ llm_app_name|lower|replace('-','_')}} import (
     validate_feature_flags,
     verify_llm,
     verify_llm_gateway_model_availability,
@@ -42,7 +42,7 @@ __all__ = [
     "app_runtime_parameters",
     "default_llm",
     "{{llm_app_name}}_application_name",
-    "{{llm_app_name}}_resource_name"
+    "{{llm_app_name}}_resource_name",
 ]
 
 REQUIRED_FEATURE_FLAGS = {

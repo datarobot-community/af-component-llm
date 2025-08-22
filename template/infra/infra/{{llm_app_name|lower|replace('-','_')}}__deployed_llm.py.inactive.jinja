@@ -15,20 +15,30 @@
 This module is useful when you already have an LLM Deployed.
 It will pull it into the playground and use case
 """
+
 import os
 from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.pulumi.proxy_llm_blueprint import (
     ProxyLLMBlueprint,
     LLMBlueprintArgs,
-
 )
 import pulumi
 import pulumi_datarobot as datarobot
 
 from . import use_case
-from .__{{ llm_app_name|lower|replace('-','_')}}__ import (
-    validate_feature_flags, verify_llm, verify_llm_gateway_model_availability
+from .{{ llm_app_name|lower|replace('-','_')}} import (
+    validate_feature_flags,
+    verify_llm,
+    verify_llm_gateway_model_availability,
 )
+
+__all__ = [
+    "custom_model_runtime_parameters",
+    "app_runtime_parameters",
+    "default_llm",
+    "{{llm_app_name}}_application_name",
+    "{{llm_app_name}}_resource_name",
+]
 
 REQUIRED_FEATURE_FLAGS = {
     "ENABLE_MLOPS": True,
