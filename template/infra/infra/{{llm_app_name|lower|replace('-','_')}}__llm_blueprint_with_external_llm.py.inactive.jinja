@@ -31,7 +31,7 @@ from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 
 from . import use_case
 from .{{ llm_app_name|lower|replace('-','_')}} import (
-    create_datarobot_credentials_from_litellm,
+    get_runtime_values,
     validate_feature_flags,
     verify_llm,
 )
@@ -58,14 +58,11 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_llm: str = "azure/gpt-4o-2024-11-20"
-default_llm_id: str = "azure-openai-gpt-4-o"
+default_llm: str = "azure-openai-gpt-4-o"
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = create_datarobot_credentials_from_litellm(
-    default_llm,
-    {{llm_app_name}}_application_name,
-)
+llm_credential_runtime_params = get_runtime_values(default_llm)
+verify_llm("azure/gpt-4o")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
@@ -74,7 +71,7 @@ playground = datarobot.Playground(
 
 llm_blueprint_args = LLMBlueprintArgs(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id=default_llm_id,
+    llm_id=default_llm,
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
@@ -146,7 +143,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
         type="string",
-        value=default_llm_id,
+        value=default_llm,
     ),
 ]
 custom_model_runtime_parameters = [
