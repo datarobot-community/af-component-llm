@@ -112,6 +112,7 @@ class LLMCredentials:
         # Determine which providers are available based on credentials
         if any(key.startswith("AZURE_") for key in self.credentials):
             self.available_providers.add("azure")
+            self.available_providers.add("openai")
         if any(key.startswith("VERTEX_") for key in self.credentials) or any(key.startswith("GOOGLE_") for key in self.credentials):
             self.available_providers.add("vertex_ai")
         if any(key.startswith("AWS_") for key in self.credentials):
@@ -120,7 +121,7 @@ class LLMCredentials:
             self.available_providers.add("openai")
             self.available_providers.add("azure")
 
-    def to_datarobot_format(self) -> dict[str, str]:
+    def transform(self) -> dict[str, str]:
         """Convert to DataRobot parameter format with transformations applied for all providers."""
         transformed = {}
         transformed_vars = set()
@@ -131,8 +132,13 @@ class LLMCredentials:
 
             for mapping in mappings:
                 if mapping.litellm_name in self.credentials:
+                    # Add the transformed DataRobot variable name
                     transformed[mapping.datarobot_name] = self.credentials[mapping.litellm_name]
                     transformed_vars.add(mapping.litellm_name)
+
+                    # Also add the original LiteLLM variable name unless the DataRobot name is already set
+                    if mapping.datarobot_name not in self.credentials:
+                        transformed[mapping.litellm_name] = self.credentials[mapping.litellm_name]
 
         # Pass through all other variables as-is (ones that don't need transformation)
         for key, value in self.credentials.items():
@@ -157,7 +163,7 @@ class LLMCredentials:
             # Environment variables are restored to original state
         """
         if use_datarobot_format:
-            env_vars = self.to_datarobot_format()
+            env_vars = self.transform()
         else:
             env_vars = self.credentials
 
@@ -190,7 +196,7 @@ class LLMCredentials:
         Create DataRobot credential objects from all available credentials.
         Handles credentials for all loaded providers.
         """
-        credentials = self.to_datarobot_format()
+        credentials = self.transform()
 
         if not credentials:
             raise pulumi.error(f"No credentials found")
