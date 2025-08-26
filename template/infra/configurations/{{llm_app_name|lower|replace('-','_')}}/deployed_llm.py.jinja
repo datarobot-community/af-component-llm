@@ -18,6 +18,7 @@ It will pull it into the playground and use case
 
 import os
 from datarobot_pulumi_utils.pulumi import export
+from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 import pulumi
 import pulumi_datarobot as datarobot
 
@@ -54,7 +55,7 @@ verify_llm(deployment_id=TEXTGEN_DEPLOYMENT_ID)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
-    resource_name="LLM Playground " + {{llm_app_name}}_resource_name,
+    resource_name=f"LLM Playground [{PROJECT_NAME}]" + {{llm_app_name}}_resource_name,
 )
 proxy_llm_deployment = datarobot.Deployment.get(
     resource_name="Existing LLM Deployment", id=TEXTGEN_DEPLOYMENT_ID
