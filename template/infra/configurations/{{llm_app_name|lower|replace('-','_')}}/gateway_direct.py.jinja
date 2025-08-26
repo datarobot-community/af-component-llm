@@ -14,7 +14,7 @@
 from datarobot_pulumi_utils.pulumi import export
 import pulumi_datarobot as datarobot
 
-from .{{ llm_app_name|lower|replace('-','_')}} import (
+from .lib{{ llm_app_name|lower|replace('-','_')}} import (
     validate_feature_flags,
     verify_llm,
     verify_llm_gateway_model_availability,

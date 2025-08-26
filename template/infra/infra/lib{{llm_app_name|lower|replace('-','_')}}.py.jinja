@@ -12,22 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module is the "frontend" for the selected LLM module for other infra modules
-to import resources and attributes.
-i.e., `from .llm import app_runtime_parameters, default_llm`
-will pull in those attributes from the active LLM module.
+Utility functions for creating needed runtime parameters, credentials, and validating
+the LLM configuration is functional prior to deployment.
 """
 
 from dataclasses import dataclass, field
-import importlib
 import os
 import re
-import sys
 import tempfile
 from collections import namedtuple
 from pathlib import Path
-from types import ModuleType
-from typing import Any
 
 import datarobot
 import pulumi
@@ -42,12 +36,7 @@ from datarobot_pulumi_utils.common.feature_flags import (
 )
 
 INFRA_DIR = Path(__file__).parent
-TEMPLATES = {
-    "{{llm_app_name|lower|replace('-','_')}}__deployed_llm",
-    "{{llm_app_name|lower|replace('-','_')}}__llm_blueprint_with_llm_gateway",
-    "{{llm_app_name|lower|replace('-','_')}}__llm_blueprint_with_provided_llm",
-    "{{llm_app_name|lower|replace('-','_')}}__llm_gateway_direct",
-}
+
 
 # LLM Credential Management Mapping
 RuntimeParameterValueArgs = namedtuple(
@@ -135,7 +124,7 @@ class ProviderCredential:
                 )
             elif param.type == "credential":
                 credential = pulumi_datarobot.ApiTokenCredential(
-                    resource_name=f"{PROJECT_NAME} {param.key} Credential [{pulumi.get_stack()}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
                     api_token=os.environ.get(param.key),
                 )
                 runtime_values.append(
@@ -145,7 +134,7 @@ class ProviderCredential:
                 )
             elif param.type == "google_credential":
                 credential = pulumi_datarobot.GoogleCloudCredential(
-                    resource_name=f"{PROJECT_NAME} {param.key} Credential [{pulumi.get_stack()}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
                     gcp_key=os.environ.get(param.key),
                 )
                 runtime_values.append(
@@ -157,7 +146,7 @@ class ProviderCredential:
                 )
             elif param.type == "aws_credential":
                 credential = pulumi_datarobot.AwsCredential(
-                    resource_name=f"{PROJECT_NAME} {param.key} Credential [{pulumi.get_stack()}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
                     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
                     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
                     aws_session_token=os.environ.get("AWS_SESSION_TOKEN"),
@@ -248,66 +237,6 @@ def get_runtime_values(
     provider = provider_aliases.get(provider, provider)
     credential = PROVIDER_CREDENTIALS_MAP[provider]
     return credential.runtime_parameter_values
-
-
-# Cache for the active module to avoid repeated imports
-_active_module_cache: ModuleType | None = None
-
-
-def _get_active_module() -> ModuleType | None:
-    """Get the active LLM module, loading and caching it if necessary."""
-    global _active_module_cache
-
-    if _active_module_cache is not None:
-        return _active_module_cache
-
-    # Find the active module file
-    active_file = None
-    for llm_module in INFRA_DIR.glob("{{llm_app_name|lower|replace('-','_')}}__*.py"):
-        if llm_module.is_file():
-            active_file = llm_module
-            break
-
-    if active_file is None:
-        pulumi.warn("No LLM is selected for {{llm_app_name}} to choose from")
-        return None
-
-    # Import and cache the active module using absolute import
-    module_stem = active_file.stem
-    # Get 'infra.infra' from 'infra.infra.{{llm_app_name|lower|replace('-','_')}}'
-    current_package = __name__.rsplit(".", 1)[0]
-    module_name = f"{current_package}.{module_stem}"
-
-    try:
-        _active_module_cache = importlib.import_module(module_name)
-        return _active_module_cache
-    except ImportError as e:
-        raise ImportError(f"Failed to import active LLM module {module_name}: {e}")
-
-
-def __getattr__(name: str) -> Any:
-    """
-    Lazy attribute lookup that delegates to the active LLM module.
-
-    This gets called when an attribute is not found in the current module,
-    allowing us to dynamically proxy attributes from the active LLM module.
-    """
-    # Avoid intercepting Python special attributes to prevent recursion
-    if name.startswith("__") and name.endswith("__"):
-        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
-
-    try:
-        active_module = _get_active_module()
-        if hasattr(active_module, name):
-            # Cache the attribute in our module for faster subsequent access
-            value = getattr(active_module, name)
-            setattr(sys.modules[__name__], name, value)
-            return value
-    except Exception as e:
-        pulumi.warn(f"Failed to get attribute '{name}' from active LLM module: {e}")
-
-    # If we can't find it, raise the standard AttributeError
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def validate_feature_flags(flags: FeatureFlagSet) -> None:
@@ -409,30 +338,3 @@ def verify_llm(model_id: str | None, deployment_id: str | None = None) -> None:
         messages=[{"content": "Hi", "role": "user"}],
         **completion_extra_kwargs,
     )
-
-
-def validate_single_selection() -> None:
-    """Validate that exactly one LLM module exists."""
-    enabled_llms = []
-    for llm_module in INFRA_DIR.glob("{{llm_app_name|lower|replace('-','_')}}__*.py"):
-        if llm_module.is_file():
-            enabled_llms.append(llm_module.name)
-    if not enabled_llms:
-        pulumi.warn("No LLM modules are enabled for {{llm_app_name}}.")
-
-    if len(enabled_llms) != 1:
-        found_llms = "\n  - ".join(enabled_llms)
-        disable_llm_config = "\n".join(
-            [f"INFRA_ENABLE_{llm.upper()[:-3]}=false" for llm in enabled_llms]
-        )
-        raise ValueError(
-            f"Exactly one LLM module must be enabled for {{llm_app_name}}. Select one by renaming the LLM modules you don't want with a `.inactive` suffix or using environment variables to disable them with `INFRA_ENABLE_<filename>=false`.\nFound: \n  - {found_llms}\n\nTo disable them with environment variables:\n{disable_llm_config}"
-        )
-
-
-def init():
-    """Code that needs to run on import."""
-    validate_single_selection()
-
-
-init()

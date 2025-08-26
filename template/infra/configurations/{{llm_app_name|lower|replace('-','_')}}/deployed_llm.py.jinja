@@ -18,18 +18,13 @@ It will pull it into the playground and use case
 
 import os
 from datarobot_pulumi_utils.pulumi import export
-from datarobot_pulumi_utils.pulumi.proxy_llm_blueprint import (
-    ProxyLLMBlueprint,
-    LLMBlueprintArgs,
-)
 import pulumi
 import pulumi_datarobot as datarobot
 
 from . import use_case
-from .{{ llm_app_name|lower|replace('-','_')}} import (
+from .lib{{ llm_app_name|lower|replace('-','_')}} import (
     validate_feature_flags,
     verify_llm,
-    verify_llm_gateway_model_availability,
 )
 
 __all__ = [
@@ -47,11 +42,11 @@ REQUIRED_FEATURE_FLAGS = {
     "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
 }
 
-TEXTGEN_DEPLOYMENT_ID = os.environ.get("TEXTGEN_DEPLOYMENT_ID")
+TEXTGEN_DEPLOYMENT_ID = os.environ["TEXTGEN_DEPLOYMENT_ID"]
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_llm: str = "my-llm"
+default_llm: str = "custom-model"
 
 # Verify everything is working
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
@@ -64,27 +59,12 @@ playground = datarobot.Playground(
 proxy_llm_deployment = datarobot.Deployment.get(
     resource_name="Existing LLM Deployment", id=TEXTGEN_DEPLOYMENT_ID
 )
-llm_blueprint_args = LLMBlueprintArgs(
-    resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id=default_llm,
-    llm_settings=LLMSettings(
-        max_completion_length=2048,
-        temperature=0.1,
-        top_p=None,
-    ),
-)
-llm_blueprint = ProxyLLMBlueprint(
-    use_case_id=use_case.id,
-    playground_id=playground.id,
-    proxy_llm_deployment_id=proxy_llm_deployment.id,
-    chat_model_name=default_llm,
-)
 
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEPLOYMENT_ID",
         type="string",
-        value=proxy_llm_blueprint.id,
+        value=proxy_llm_deployment.id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
@@ -96,9 +76,9 @@ custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="LLM_DEPLOYMENT_ID",
         type="string",
-        value=llm_deployment.id,
+        value=proxy_llm_deployment.id,
     )
 ]
 
-pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_blueprint.id)
-export("LLM_DEPLOYMENT_ID", proxy_llm_blueprint.id)
+pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_deployment.id)
+export("LLM_DEPLOYMENT_ID", proxy_llm_deployment.id)
