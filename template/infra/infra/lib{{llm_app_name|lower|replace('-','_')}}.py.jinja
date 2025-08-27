@@ -291,7 +291,7 @@ def verify_llm_gateway_model_availability(model_id: str) -> None:
         )
 
 
-def verify_llm(model_id: str | None, deployment_id: str | None = None) -> None:
+def verify_llm(model_id: str | None = None, deployment_id: str | None = None) -> None:
     """
     Verify that the specified LLM is valid, available, and you can say hello
     """
@@ -300,7 +300,7 @@ def verify_llm(model_id: str | None, deployment_id: str | None = None) -> None:
     if deployment_id:
         dr_client = datarobot.Client()
         deployment_chat_base_url = (
-            f"{dr_client.endpoint.rstrip('/')}/deployments/{deployment_id}/"
+            f"{dr_client.endpoint.rstrip('/')}/deployments/{deployment_id}/chat/completions"
         )
         completion(
             model="datarobot/datarobot-deployed-llm",

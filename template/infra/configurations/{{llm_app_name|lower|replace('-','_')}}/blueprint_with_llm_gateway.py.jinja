@@ -11,6 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+This configuration option is available as the most flexible option with the most
+production controls. It uses our LLM Blueprint and LLM Gateway options to enable
+multiple LLMs through a single deployment with all of the DataRobot governance
+and monitoring baked in.
+"""
 
 import datarobot as dr
 import pulumi
@@ -60,11 +66,34 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
+# This is the model_id that the DataRobot LLM Gateway expects.
+# You can get a list of these models by running:
+"""
+import datarobot
+dr_client = datarobot.Client()
+response = dr_client.get("genai/llmgw/catalog/")
+data = response.json()
+print("\n.   - ".join(
+    [
+        model["model"]
+        for model in data["data"]
+        if not model["isDeprecated"] and model["isActive"]
+    ]
+))
+"""
 default_llm: str = "azure/gpt-4o-2024-11-20"
 
-# Verify everything is working
+# Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+
+# This does a quick check that validates the selected model is available
+# by checking the LLM Gateway. If it isn't, it will raise an error
+# with the list of models that are available and not deprecated.
 verify_llm_gateway_model_availability(default_llm)
+
+# LiteLLM support DataRobot as a provider, so this validates
+# everything is working and the default LLM you've chosen is available
+# by adding `datarobot/` in front of the model
 verify_llm(f"datarobot/{default_llm}")
 
 playground = datarobot.Playground(
