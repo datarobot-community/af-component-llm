@@ -30,6 +30,7 @@ from datarobot_pulumi_utils.pulumi.proxy_llm_blueprint import ProxyLLMBlueprint
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.schema.custom_models import CustomModelArgs
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
+from datarobot_pulumi_utils.schema.llms import LLMSettings
 import pulumi
 import pulumi_datarobot as datarobot
 
@@ -98,6 +99,12 @@ proxy_llm_deployment.id.apply(lambda id: verify_llm(deployment_id=id))
 
 # Make a LLM Blueprint from the deployed registered model
 llm_blueprint = ProxyLLMBlueprint(
+    resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
+    llm_id=default_llm,
+    llm_settings=LLMSettings(
+        max_completion_length=2048,
+        temperature=0.1,
+    ),
     use_case_id=use_case.id,
     playground_id=playground.id,
     proxy_llm_deployment_id=proxy_llm_deployment.id,
