@@ -168,4 +168,4 @@ custom_model_runtime_parameters = [
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)
-export("{{llm_app_name}}_DEFAULT_MODEL", default_model)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
