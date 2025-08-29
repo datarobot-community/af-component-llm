@@ -328,5 +328,4 @@ def verify_llm(model_id: str | None = None, deployment_id: str | None = None) ->
     completion(
         model=model_id,
         messages=[{"content": "Hi", "role": "user"}],
-        **completion_extra_kwargs,
     )
