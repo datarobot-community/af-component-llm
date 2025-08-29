@@ -43,7 +43,7 @@ from .lib{{ llm_app_name|lower|replace('-','_')}} import (
 __all__ = [
     "custom_model_runtime_parameters",
     "app_runtime_parameters",
-    "default_llm",
+    "default_model",
     "{{llm_app_name}}_application_name",
     "{{llm_app_name}}_resource_name",
 ]
@@ -59,7 +59,7 @@ TEXTGEN_REGISTERED_MODEL_ID = os.environ["TEXTGEN_REGISTERED_MODEL_ID"]
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_llm: str = "custom-model"
+default_model: str = "custom-model"
 
 # Verify the feature flags are available
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
@@ -100,7 +100,7 @@ proxy_llm_deployment.id.apply(lambda id: verify_llm(deployment_id=id))
 # Make a LLM Blueprint from the deployed registered model
 llm_blueprint = ProxyLLMBlueprint(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id=default_llm,
+    llm_id=default_model,
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
@@ -109,7 +109,7 @@ llm_blueprint = ProxyLLMBlueprint(
     use_case_id=use_case.id,
     playground_id=playground.id,
     proxy_llm_deployment_id=proxy_llm_deployment.id,
-    chat_model_name=default_llm,
+    chat_model_name=default_model,
 )
 
 custom_model_args = CustomModelArgs(
@@ -163,7 +163,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
         type="string",
-        value=default_llm,
+        value=default_model,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -176,3 +176,4 @@ custom_model_runtime_parameters = [
 
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", proxy_llm_deployment.id)
+export("{{llm_app_name}}_DEFAULT_MODEL", default_model)

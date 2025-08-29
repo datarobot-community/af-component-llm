@@ -325,14 +325,6 @@ def verify_llm(model_id: str | None = None, deployment_id: str | None = None) ->
             model_id = provider + "/" + "-".join(model_id.split("-")[1:])
     # Map common aliases to their canonical provider names
     provider = provider_aliases.get(provider, provider)
-    # Remove after https://github.com/BerriAI/litellm/pull/13880
-    # is released
-    completion_extra_kwargs = dict()
-    base_url = None
-    if model_id.startswith("datarobot/"):
-        dr_client = datarobot.Client()
-        base_url = re.sub(r"api/v2/?$", "", dr_client.endpoint)
-        completion_extra_kwargs["base_url"] = base_url
     completion(
         model=model_id,
         messages=[{"content": "Hi", "role": "user"}],

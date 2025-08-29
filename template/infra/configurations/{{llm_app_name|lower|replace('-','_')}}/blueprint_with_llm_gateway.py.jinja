@@ -46,7 +46,7 @@ from .lib{{ llm_app_name|lower|replace('-','_')}} import (
 __all__ = [
     "custom_model_runtime_parameters",
     "app_runtime_parameters",
-    "default_llm",
+    "default_model",
     "{{llm_app_name}}_application_name",
     "{{llm_app_name}}_resource_name",
 ]
@@ -81,7 +81,7 @@ print("\n.   - ".join(
     ]
 ))
 """
-default_llm: str = "azure/gpt-4o-2024-11-20"
+default_model: str = "azure/gpt-4o-2024-11-20"
 
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
@@ -89,12 +89,12 @@ validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 # This does a quick check that validates the selected model is available
 # by checking the LLM Gateway. If it isn't, it will raise an error
 # with the list of models that are available and not deprecated.
-verify_llm_gateway_model_availability(default_llm)
+verify_llm_gateway_model_availability(default_model)
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available
 # by adding `datarobot/` in front of the model
-verify_llm(f"datarobot/{default_llm}")
+verify_llm(f"datarobot/{default_model}")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
@@ -103,7 +103,7 @@ playground = datarobot.Playground(
 
 llm_blueprint_args = LLMBlueprintArgs(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id="azure-openai-gpt-4-o",  # TODO: Switch this to `default_llm` after APP-4684 closes
+    llm_id="azure-openai-gpt-4-o",  # TODO: Switch this to `default_model` after APP-4684 closes
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
@@ -179,7 +179,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
         type="string",
-        value=default_llm,
+        value=default_model,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -192,3 +192,4 @@ custom_model_runtime_parameters = [
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)
 export("USE_DATAROBOT_LLM_GATEWAY", "1")
+export("{{llm_app_name}}_DEFAULT_MODEL", default_model)
