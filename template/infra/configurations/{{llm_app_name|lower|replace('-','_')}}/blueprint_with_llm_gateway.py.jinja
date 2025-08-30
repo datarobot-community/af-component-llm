@@ -177,7 +177,7 @@ app_runtime_parameters = [
         value="1",
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
+        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
@@ -187,7 +187,12 @@ custom_model_runtime_parameters = [
         key="LLM_DEPLOYMENT_ID",
         type="string",
         value=llm_deployment.id,
-    )
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
+        type="string",
+        value=default_model,
+    ),
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)

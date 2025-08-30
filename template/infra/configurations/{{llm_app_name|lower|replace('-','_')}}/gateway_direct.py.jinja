@@ -79,7 +79,7 @@ app_runtime_parameters = [
         value="1",
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
+        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
@@ -91,7 +91,7 @@ custom_model_runtime_parameters = [
         value="1",
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_MODEL_ID",
+        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
