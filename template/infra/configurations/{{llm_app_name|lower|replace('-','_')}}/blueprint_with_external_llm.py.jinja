@@ -65,6 +65,7 @@ __all__ = [
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
 default_model: str = "azure-openai-gpt-4-o"
+default_model_friendly_name: str = "Azure OpenAI GPT-4o"
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 llm_credential_runtime_params = get_runtime_values(default_model)
@@ -161,7 +162,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL_FRIENDLY_NAME",
         type="string",
-        value=llm_deployment.name,
+        value=default_model_friendly_name,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -179,4 +180,4 @@ custom_model_runtime_parameters = [
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", llm_deployment.id)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
-export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", llm_deployment.name)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", default_model_friendly_name)

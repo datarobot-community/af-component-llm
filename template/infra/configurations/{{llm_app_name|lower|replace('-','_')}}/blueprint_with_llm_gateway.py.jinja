@@ -75,14 +75,14 @@ response = dr_client.get("genai/llmgw/catalog/")
 data = response.json()
 print("\n.   - ".join(
     [
-        model["model"]
+        f"{model['model']}:{model['llmId']}"
         for model in data["data"]
         if not model["isDeprecated"] and model["isActive"]
     ]
 ))
 """
-default_model: str = "azure/gpt-4o-2024-11-20"
-
+default_model: str = "bedrock/anthropic.claude-3-7-sonnet-20250219-v1:0"
+default_llm_id: str = "amazon-anthropic-claude-3-7-sonnet-v1"
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 
@@ -103,7 +103,7 @@ playground = datarobot.Playground(
 
 llm_blueprint_args = LLMBlueprintArgs(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
-    llm_id=default_model,
+    llm_id=default_llm_id,
     llm_settings=LLMSettings(
         max_completion_length=2048,
         temperature=0.1,
