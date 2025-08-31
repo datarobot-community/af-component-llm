@@ -77,7 +77,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL_FRIENDLY_NAME",
         type="string",
-        value=proxy_llm_registered_model.name,
+        value=proxy_llm_deployment.name,
     ),
 ]
 custom_model_runtime_parameters = [
