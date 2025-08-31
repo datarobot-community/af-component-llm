@@ -139,7 +139,7 @@ deployment_args = DeploymentArgs(
 )
 
 llm_deployment = CustomModelDeployment(
-    resource_name="LLM Deployment " + {{llm_app_name}}_resource_name,
+    resource_name="LLM Blueprint Deployment " + {{llm_app_name}}_resource_name,
     use_case_ids=[use_case.id],
     custom_model_version_id=llm_custom_model.version_id,
     registered_model_args=registered_model_args,

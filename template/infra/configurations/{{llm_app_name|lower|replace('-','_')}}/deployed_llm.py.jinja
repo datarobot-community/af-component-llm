@@ -77,7 +77,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL_FRIENDLY_NAME",
         type="string",
-        value=proxy_llm_deployment.name,
+        value=proxy_llm_deployment.label,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -96,4 +96,4 @@ custom_model_runtime_parameters = [
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_deployment.id)
 export("LLM_DEPLOYMENT_ID", proxy_llm_deployment.id)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
-export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", proxy_llm_deployment.name)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", proxy_llm_deployment.label)
