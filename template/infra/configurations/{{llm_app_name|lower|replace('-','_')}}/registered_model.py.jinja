@@ -20,17 +20,9 @@ For that, you'll need to choose the "registered_model_llm.py" option
 
 import os
 import datarobot as dr
-from datarobot_pulumi_utils.pulumi.custom_model_deployment import (
-    CustomModelDeployment,
-    DeploymentArgs,
-    RegisteredModelArgs,
-)
 from datarobot_pulumi_utils.pulumi import export
-from datarobot_pulumi_utils.pulumi.proxy_llm_blueprint import ProxyLLMBlueprint
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
-from datarobot_pulumi_utils.schema.custom_models import CustomModelArgs
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
-from datarobot_pulumi_utils.schema.llms import LLMSettings
 import pulumi
 import pulumi_datarobot as datarobot
 
@@ -69,19 +61,15 @@ playground = datarobot.Playground(
     resource_name=f"LLM Playground [{PROJECT_NAME}]" + {{llm_app_name}}_resource_name,
 )
 
-registered_model_args = RegisteredModelArgs(
-    resource_name="LLM Registered Model " + {{llm_app_name}}_resource_name,
+# Pull in the registered model
+proxy_llm_registered_model = datarobot.RegisteredModel.get(
+    resource_name="Existing TextGen Registered Model",
+    id=TEXTGEN_REGISTERED_MODEL_ID,
 )
 
 prediction_environment = datarobot.PredictionEnvironment(
     resource_name="LLM Prediction Environment " + {{llm_app_name}}_resource_name,
     platform=dr.enums.PredictionEnvironmentPlatform.DATAROBOT_SERVERLESS,
-)
-
-# Pull in the registered model
-proxy_llm_registered_model = datarobot.RegisteredModel.get(
-    resource_name="Existing TextGen Registered Model",
-    id=TEXTGEN_REGISTERED_MODEL_ID,
 )
 
 # Create the deployment for that registered model
@@ -113,18 +101,33 @@ llm_blueprint = datarobot.LlmBlueprint(
     playground_id=playground.id,
 )
 
-custom_model_args = CustomModelArgs(
+llm_custom_model = datarobot.CustomModel(
     resource_name="LLM Custom Model " + {{llm_app_name}}_resource_name,
     name="LLM Custom Model " + {{llm_app_name}}_resource_name,
     target_name="resultText",
     target_type=dr.enums.TARGET_TYPE.TEXT_GENERATION,
     replicas=1,
     base_environment_id=RuntimeEnvironments.PYTHON_312_MODERATIONS.value.id,
+    use_case_ids=[use_case.id],
+    source_llm_blueprint_id=llm_blueprint.id,
+    runtime_parameter_values=[],
 )
 
-deployment_args = DeploymentArgs(
-    resource_name="LLM Deployment Args " + {{llm_app_name}}_resource_name,
+# Register the custom model
+llm_registered_model = datarobot.RegisteredModel(
+    resource_name="LLM Registered Model " + {{llm_app_name}}_resource_name,
+    custom_model_version_id=llm_custom_model.version_id,
+    name="LLM Registered Model " + {{llm_app_name}}_resource_name,
+    use_case_ids=[use_case.id],
+)
+
+# Deploy the registered model
+llm_deployment = datarobot.Deployment(
+    resource_name="LLM Blueprint Deployment " + {{llm_app_name}}_resource_name,
+    registered_model_version_id=llm_registered_model.version_id,
+    prediction_environment_id=prediction_environment.id,
     label=f"LLM Deployment [{PROJECT_NAME}] " + {{llm_app_name}}_resource_name,
+    use_case_ids=[use_case.id],
     association_id_settings=datarobot.DeploymentAssociationIdSettingsArgs(
         column_names=["association_id"],
         auto_generate_id=False,
@@ -133,25 +136,11 @@ deployment_args = DeploymentArgs(
     predictions_data_collection_settings=datarobot.DeploymentPredictionsDataCollectionSettingsArgs(
         enabled=True,
     ),
-    predictions_settings=(
-        datarobot.DeploymentPredictionsSettingsArgs(min_computes=0, max_computes=2)
+    predictions_settings=datarobot.DeploymentPredictionsSettingsArgs(
+        min_computes=0, 
+        max_computes=2
     ),
-)
-
-llm_custom_model = datarobot.CustomModel(
-    **custom_model_args.model_dump(exclude_none=True),
-    use_case_ids=[use_case.id],
-    source_llm_blueprint_id=llm_blueprint.id,
-    runtime_parameter_values=[],
-)
-
-llm_deployment = CustomModelDeployment(
-    resource_name="LLM Blueprint Deployment " + {{llm_app_name}}_resource_name,
-    use_case_ids=[use_case.id],
-    custom_model_version_id=llm_custom_model.version_id,
-    registered_model_args=registered_model_args,
-    prediction_environment=prediction_environment,
-    deployment_args=deployment_args,
+    opts=pulumi.ResourceOptions(replace_on_changes=["registered_model_version_id"]),
 )
 
 
