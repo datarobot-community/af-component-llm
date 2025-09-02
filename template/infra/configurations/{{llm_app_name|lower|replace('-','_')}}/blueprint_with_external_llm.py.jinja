@@ -19,6 +19,7 @@ and monitoring.
 """
 
 import datarobot as dr
+import os
 import pulumi
 import pulumi_datarobot as datarobot
 from datarobot_pulumi_utils.pulumi import export
@@ -54,11 +55,12 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_model: str = "azure-openai-gpt-4-o"
-default_model_friendly_name: str = "Azure OpenAI GPT-4o"
+default_model: str = "datarobot-deployed-llm"  # The blue print model name in DataRobot
+external_model_id: str = "azure-openai-gpt-4-o"  # External LLM ID from the Playground
+default_model_friendly_name: str = "Azure OpenAI GPT-4o"  # Shown in the Web UI
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(default_model)
+llm_credential_runtime_params = get_runtime_values(external_model_id)
 # This will ensure your credentials are working properly
 # https://docs.litellm.ai/docs/providers for more details
 # on what string to pass to `verify_llm` This default
@@ -66,7 +68,7 @@ llm_credential_runtime_params = get_runtime_values(default_model)
 # You combine that with azure/gpt-4o for LiteLLM to verify the model.
 # Similar instructions exist for Bedrock: https://docs.litellm.ai/docs/providers/bedrock
 # and Vertex: https://docs.litellm.ai/docs/providers/vertex
-verify_llm("azure/gpt-4o")
+verify_llm(f"azure/{os.getenv('OPENAI_API_DEPLOYMENT_ID')}")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
@@ -76,7 +78,7 @@ playground = datarobot.Playground(
 llm_blueprint = datarobot.LlmBlueprint(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
     playground_id=playground.id,
-    llm_id=default_model,
+    llm_id=external_model_id,
     llm_settings=datarobot.LlmBlueprintLlmSettingsArgs(
         max_completion_length=2048,
         temperature=0.1,

@@ -62,7 +62,10 @@ playground = datarobot.Playground(
 proxy_llm_deployment = datarobot.Deployment.get(
     resource_name="Existing LLM Deployment", id=TEXTGEN_DEPLOYMENT_ID
 )
-
+prediction_environment = datarobot.PredictionEnvironment.get(
+    resource_name="Existing LLM Prediction Environment",
+    id=proxy_llm_deployment.prediction_environment_id,
+)
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key={{llm_app_name}}_application_name.upper() + "_DEPLOYMENT_ID",
