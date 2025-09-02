@@ -53,7 +53,7 @@ default_model: str = os.environ.get("LLM_DEFAULT_MODEL", "custom-model")
 
 # Verify everything is working
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-verify_llm(deployment_id=TEXTGEN_DEPLOYMENT_ID)
+verify_llm(model_id=f"datarobot/{default_model}", deployment_id=TEXTGEN_DEPLOYMENT_ID)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,

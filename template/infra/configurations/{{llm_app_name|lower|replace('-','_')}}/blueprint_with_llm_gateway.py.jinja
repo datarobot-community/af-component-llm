@@ -142,8 +142,7 @@ llm_deployment = datarobot.Deployment(
         enabled=True,
     ),
     predictions_settings=datarobot.DeploymentPredictionsSettingsArgs(
-        min_computes=0, 
-        max_computes=2
+        min_computes=0, max_computes=2
     ),
     opts=pulumi.ResourceOptions(replace_on_changes=["registered_model_version_id"]),
 )
