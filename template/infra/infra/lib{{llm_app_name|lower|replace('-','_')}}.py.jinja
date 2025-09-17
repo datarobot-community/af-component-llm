@@ -246,8 +246,6 @@ def validate_feature_flags(flags: FeatureFlagSet) -> None:
         pulumi.warn(
             f"Feature flag '{flag}' is required to be {correct_value} but is no longer a valid DataRobot feature flag."
         )
-    if invalid_flags:
-        raise ValueError(f"Invalid feature flags detected: {invalid_flags}")
     for flag, correct_value in corrections:
         pulumi.error(
             f"This app template requires that feature flag '{flag}' is set "
