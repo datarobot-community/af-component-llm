@@ -44,34 +44,13 @@ external_llm:
     optional: false
     multiple: true
     options:
-      - name: "Azure"
       - name: "Azure with OpenAI"
-      - name: "Google"
       - name: "Google VertexAI"
       - name: "Anthropic"
       - name: "Bedrock"
       - name: "Cohere"
       - name: "TogetherAI"
     help: "The provider of the external LLM model. Options are OpenAI, Azure, VertexAI, Anthropic, etc."
-
-
-azure:
-  - env: AZURE_API_KEY
-    type: string
-    optional: false
-    help: "The API key for OpenAI."
-  - env: AZURE_API_BASE
-    type: string
-    optional: false
-    help: "The API base URL for OpenAI, usually in the format https://<your_custom_endpoint>.openai.azure.com"
-  - env: AZURE_API_DEPLOYMENT_ID
-    type: string
-    optional: false
-    help: "The deployment ID for the OpenAI model."
-  - env: AZURE_API_VERSION
-    type: string
-    optional: false
-    help: "The API version for OpenAI."
 
 azure_openai:
   - env: OPENAI_API_KEY
@@ -104,16 +83,6 @@ bedrock:
     type: string
     optional: false
     help: "The AWS region name for Bedrock, e.g., us-east-1."
-
-google:
-  - env: GOOGLE_APPLICATION_CREDENTIALS
-    type: string
-    optional: false
-    help: "The path to the Google application credentials JSON file."
-  - env: GOOGLE_SERVICE_ACCOUNT
-    type: string
-    optional: false
-    help: "The Google service account email."
 
 vertexai:
   - env: VERTEXAI_APPLICATION_CREDENTIALS
