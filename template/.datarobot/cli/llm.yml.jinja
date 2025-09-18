@@ -7,14 +7,17 @@ root:
     options:
       - name: "External LLM"
         value: "blueprint_with_external_llm.py"
+        requires: external_llm
       - name: "LLM Gateway"
         value: "gateway_direct.py"
       - name: "LLM Gateway with External Model"
         value: "blueprint_with_llm_gateway.py"
       - name: "DataRobot Deployed LLM"
         value: "deployed_llm.py"
+        requires: deployed_llm
       - name: "Registered Model with an LLM Blueprint"
         value: "registered_model.py"
+        requires: registered_model
 
 deployed_llm:
   - env: TEXTGEN_DEPLOYMENT_ID
@@ -45,11 +48,17 @@ external_llm:
     multiple: true
     options:
       - name: "Azure with OpenAI"
+        requires: azure_openai
       - name: "Google VertexAI"
+        requires: vertexai
       - name: "Anthropic"
+        requires: anthropic
       - name: "Bedrock"
+        requires: bedrock
       - name: "Cohere"
+        requires: cohere
       - name: "TogetherAI"
+        requires: togetherai
     help: "The provider of the external LLM model. Options are OpenAI, Azure, VertexAI, Anthropic, etc."
 
 azure_openai:
