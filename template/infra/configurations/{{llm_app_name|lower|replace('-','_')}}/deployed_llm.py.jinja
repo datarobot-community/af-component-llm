@@ -57,7 +57,7 @@ verify_llm(model_id=f"datarobot/{default_model}", deployment_id=TEXTGEN_DEPLOYME
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
-    resource_name=f"LLM Playground [{PROJECT_NAME}]" + {{llm_app_name}}_resource_name,
+    resource_name=f"LLM Playground [{PROJECT_NAME}] " + {{llm_app_name}}_resource_name,
 )
 proxy_llm_deployment = datarobot.Deployment.get(
     resource_name="Existing LLM Deployment", id=TEXTGEN_DEPLOYMENT_ID
@@ -68,35 +68,35 @@ prediction_environment = datarobot.PredictionEnvironment.get(
 )
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEPLOYMENT_ID",
+        key="{{llm_app_name|upper}}_DEPLOYMENT_ID",
         type="string",
         value=proxy_llm_deployment.id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL_FRIENDLY_NAME",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME",
         type="string",
         value=proxy_llm_deployment.label,
     ),
 ]
 custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key="LLM_DEPLOYMENT_ID",
+        key="{{llm_app_name|upper}}_DEPLOYMENT_ID",
         type="string",
         value=proxy_llm_deployment.id,
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
 ]
 
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_deployment.id)
-export("LLM_DEPLOYMENT_ID", proxy_llm_deployment.id)
+export("{{llm_app_name|upper}}_DEPLOYMENT_ID", proxy_llm_deployment.id)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", proxy_llm_deployment.label)
