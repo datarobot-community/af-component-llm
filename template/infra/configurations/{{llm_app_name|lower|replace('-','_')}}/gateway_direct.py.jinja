@@ -69,8 +69,7 @@ verify_llm_gateway_model_availability(default_model)
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available
-# by adding `datarobot/` in front of the model
-verify_llm(f"datarobot/{default_model}")
+verify_llm(f"{default_model}")
 
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
