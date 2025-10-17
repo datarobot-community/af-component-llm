@@ -49,11 +49,11 @@ TEXTGEN_DEPLOYMENT_ID = os.environ["TEXTGEN_DEPLOYMENT_ID"]
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_model: str = os.environ.get("LLM_DEFAULT_MODEL", "datarobot-deployed-llm")
+default_model: str = os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/datarobot-deployed-llm")
 
 # Verify everything is working
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-verify_llm(model_id=f"datarobot/{default_model}", deployment_id=TEXTGEN_DEPLOYMENT_ID)
+verify_llm(model_id=f"{default_model}", deployment_id=TEXTGEN_DEPLOYMENT_ID)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
