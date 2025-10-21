@@ -57,7 +57,7 @@ print("\n.   - ".join(
     ]
 ))
 """
-default_model: str = "azure/gpt-4o-2024-11-20"
+default_model: str = "datarobot/azure/gpt-4o-mini"
 
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
@@ -69,8 +69,7 @@ verify_llm_gateway_model_availability(default_model)
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available
-# by adding `datarobot/` in front of the model
-verify_llm(f"datarobot/{default_model}")
+verify_llm(f"{default_model}")
 
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
@@ -79,7 +78,7 @@ app_runtime_parameters = [
         value="1",
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
@@ -91,7 +90,7 @@ custom_model_runtime_parameters = [
         value="1",
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key={{llm_app_name}}_application_name.upper() + "_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
