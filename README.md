@@ -4,7 +4,7 @@
   </a>
 </p>
 <h3 align="center">DataRobot Application Framework</h3>
-<h1 align="center">af-component-agent</h1>
+<h1 align="center">af-component-llm</h1>
 
 <p align="center">
   <a href="https://datarobot.com">Homepage</a>
@@ -15,11 +15,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/datarobot-community/datarobot-agent-templates/tags">
-    <img src="https://img.shields.io/github/v/tag/datarobot-community/af-component-agent?label=version" alt="Latest Release">
+  <a href="https://github.com/datarobot/af-component-llm/tags">
+    <img src="https://img.shields.io/github/v/tag/datarobot/af-component-llm?label=version" alt="Latest Release">
   </a>
   <a href="/LICENSE">
-    <img src="https://img.shields.io/github/license/datarobot-community/af-component-agent" alt="License">
+    <img src="https://img.shields.io/github/license/datarobot/af-component-llm" alt="License">
   </a>
 </p>
 
@@ -38,13 +38,13 @@ uvx copier copy https://github.com/datarobot/af-component-base .
 # uvx copier copy git@github.com:datarobot/af-component-base.git .
 ```
 
-To add the agent component to your project, you can use the `uvx copier` command to copy the template from this repository:
+To add the llm component to your project, you can use the `uvx copier` command to copy the template from this repository:
 ```bash
 uvx copier copy https://github.com/datarobot/af-component-llm .
 # uvx copier copy git@github.com:datarobot/af-component-llm.git .
 ```
 
-To update an existing agent template, you can use the `uvx copier update` command. This will update the template files
+To update an existing llm template, you can use the `uvx copier update` command. This will update the template files
 ```bash
 uvx copier update -a .datarobot/answers/llm-{ llm_name }.yml -A
 ```
