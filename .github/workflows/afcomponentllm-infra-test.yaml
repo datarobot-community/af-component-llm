@@ -37,9 +37,9 @@ jobs:
         shell: sh
         working-directory: ./rendered/infra
         run: |
-          uv run ruff format --check --diff
-          uv run ruff check --diff
-          uv run mypy --pretty
+          uv run ruff format --check --diff .
+          uv run ruff check --diff .
+          uv run mypy --pretty .
         env:
           UV_CACHE_DIR: /.uv_cache
       # - name: Create pulumi stack
