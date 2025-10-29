@@ -6,7 +6,7 @@ Guidelines for developing and contributing to this project.
 
 - [DataRobot](https://www.datarobot.com)
 - [Matt Nitzken](https://github.com/mjnitz02)
-- [Anatolii Stehnii](https://github.com/tsdaemon)
+- [Carson Gee](https://github.com/carsongee)
 
 
 ## Opening new issues
