@@ -32,9 +32,10 @@ tasks:
       - cp ./fixtures/infra/pyproject.toml ./$RENDER_DIR/infra/pyproject.toml
       - cp ./fixtures/infra/__init__.py ./$RENDER_DIR/infra/infra/__init__.py
       - cp ./fixtures/infra/Pulumi.yaml ./$RENDER_DIR/infra/Pulumi.yaml
+      - touch ./$RENDER_DIR/infra/__init__.py
   install-dev:
     desc: "Install dev"
     cmds:
       - echo "Installing dev for LLM"
       - task: render-template
-      - cd ./$RENDER_DIR/infra && uv sync --extra dev
+      - cd ./$RENDER_DIR/infra && uv sync --extra dev --quiet
