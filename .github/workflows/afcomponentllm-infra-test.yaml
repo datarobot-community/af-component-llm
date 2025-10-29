@@ -37,6 +37,7 @@ jobs:
         shell: sh
         working-directory: ./rendered/infra
         run: |
+          rm ./infra/llm.py
           ln -s ./configurations/gateway_direct.py ./infra/llm.py
         env:
           UV_CACHE_DIR: /.uv_cache
