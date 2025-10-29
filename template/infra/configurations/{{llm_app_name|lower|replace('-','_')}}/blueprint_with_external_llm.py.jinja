@@ -55,9 +55,11 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_model: str = "datarobot/datarobot-deployed-llm"  # The blue print model name in DataRobot
+efault_model: str = (
+    "datarobot/datarobot-deployed-llm"  # The blue print model name in DataRobot
+)
 external_model_id: str = "azure-openai-gpt-4-o"  # External LLM ID from the Playground
-default_model_friendly_name: str = "Azure OpenAI GPT-4o"  # Shown in the Web UI
+external_model_friendly_name: str = "Azure OpenAI GPT-4o"  # Shown in the Web UI
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 llm_credential_runtime_params = get_runtime_values(external_model_id)
@@ -141,12 +143,12 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
-        value=default_model,
+        value=external_model_id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME",
+        key="{{llm_app_name|upper}}_external_model_friendly_name",
         type="string",
-        value=default_model_friendly_name,
+        value=external_model_friendly_name,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -158,10 +160,10 @@ custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
-        value=default_model,
+        value=external_model_id,
     ),
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("{{llm_app_name|upper}}_DEPLOYMENT_ID", llm_deployment.id)
-export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
-export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", default_model_friendly_name)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL", external_model_id)
+export("{{llm_app_name|upper}}_external_model_friendly_name", external_model_friendly_name)
