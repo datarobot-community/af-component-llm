@@ -14,7 +14,12 @@ jobs:
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
-        configuration: [gateway_direct, registered_model]
+        configuration: 
+          - gateway_direct
+          - registered_model
+          - blueprint_with_llm_gateway
+          - deployed_llm
+          - blueprint_with_external_llm
     container:
       image: ghcr.io/astral-sh/uv:python3.11-bookworm
     steps:
