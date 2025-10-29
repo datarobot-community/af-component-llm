@@ -38,10 +38,10 @@ jobs:
           UV_CACHE_DIR: /.uv_cache
       - name: Symlink configurations
         shell: sh
-        working-directory: ./rendered/infra
+        working-directory: ./rendered/infra/infra
         run: |
-          rm ./infra/llm.py
-          mv ./configurations/${{ matrix.configuration }}.py ./infra/llm.py
+          rm llm.py
+          ln -sf ../configurations/llm/${{ matrix.configuration }}.py llm.py
         env:
           UV_CACHE_DIR: /.uv_cache
       - name: Run linter
