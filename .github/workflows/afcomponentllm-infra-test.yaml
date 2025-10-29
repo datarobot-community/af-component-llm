@@ -41,7 +41,7 @@ jobs:
         working-directory: ./rendered/infra
         run: |
           rm ./infra/llm.py
-          ln -s ./configurations/${{ matrix.configuration }}.py ./infra/llm.py
+          mv ./configurations/${{ matrix.configuration }}.py ./infra/llm.py
         env:
           UV_CACHE_DIR: /.uv_cache
       - name: Run linter
