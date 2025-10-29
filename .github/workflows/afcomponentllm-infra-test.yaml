@@ -33,6 +33,13 @@ jobs:
           uv sync --extra dev
         env:
           UV_CACHE_DIR: /.uv_cache
+      - name: Symlink configurations
+        shell: sh
+        working-directory: ./rendered/infra
+        run: |
+          ln -s ./configurations/gateway_direct.py ./infra/llm.py
+        env:
+          UV_CACHE_DIR: /.uv_cache
       - name: Run linter
         shell: sh
         working-directory: ./rendered/infra
