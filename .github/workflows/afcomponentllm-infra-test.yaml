@@ -10,8 +10,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test-infra:
-    name: "Test Infra"
+    name: "Test Infra (${{ matrix.configuration }})"
     runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        configuration: [gateway_direct, registered_model]
     container:
       image: ghcr.io/astral-sh/uv:python3.11-bookworm
     steps:
@@ -38,7 +41,7 @@ jobs:
         working-directory: ./rendered/infra
         run: |
           rm ./infra/llm.py
-          ln -s ./configurations/gateway_direct.py ./infra/llm.py
+          ln -s ./configurations/${{ matrix.configuration }}.py ./infra/llm.py
         env:
           UV_CACHE_DIR: /.uv_cache
       - name: Run linter
