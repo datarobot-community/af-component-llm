@@ -7,9 +7,9 @@ tasks:
     cmds:
         - echo "🧹 Linting"
         - task: install-dev
-        - cd ./$RENDER_DIR/infra && uv run ruff format --check --diff
-        - cd ./$RENDER_DIR/infra && uv run ruff check --diff
-        - cd ./$RENDER_DIR/infra && uv run mypy --pretty
+        - cd ./$RENDER_DIR/infra && uv run ruff format --check --diff .
+        - cd ./$RENDER_DIR/infra && uv run ruff check --diff .
+        - cd ./$RENDER_DIR/infra && uv run mypy --pretty .
   copyright:
     aliases: [license]
     desc: 📜 Apply license headers
