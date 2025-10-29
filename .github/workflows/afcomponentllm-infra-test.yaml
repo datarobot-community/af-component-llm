@@ -17,12 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: "actions/checkout@v4"
-      - name: Setup caching
-        uses: ./.github/actions/setup-caching
-        id: setup-cache
-        with:
-          python-version: python3.11
-          cache-key-suffix: infra
       - name: Install pulumi
         run: |
           curl -fsSL https://get.pulumi.com | sh
@@ -34,18 +28,18 @@ jobs:
           copier-args: '--defaults'
       - name: Setup infra files and install dependencies
         shell: sh
-        working-directory: ./rendered
+        working-directory: ./rendered/infra
         run: |
-          uvx --from go-task-bin task infra:install
-          cd ./infra
           uv sync --extra dev
         env:
           UV_CACHE_DIR: /.uv_cache
       - name: Run linter
         shell: sh
-        working-directory: ./rendered
+        working-directory: ./rendered/infra
         run: |
-          uvx --from go-task-bin task infra:lint-check
+          uv run ruff format --check --diff
+          uv run ruff check --diff
+          uv run mypy --pretty
         env:
           UV_CACHE_DIR: /.uv_cache
       # - name: Create pulumi stack
