@@ -50,14 +50,9 @@ uvx copier update -a .datarobot/answers/llm-{ llm_name }.yml -A
 ```
 
 
-## Developer Guide
-Please see the [Development Documentation](/docs/development.md).
-
-
 # Get help
 
 If you encounter issues or have questions, try the following:
 
-- Check [the documentation](#available-templates) for your chosen framework.
 - [Contact DataRobot](https://docs.datarobot.com/en/docs/get-started/troubleshooting/general-help.html) for support.
 - Open an issue on the [GitHub repository](https://github.com/datarobot/af-component-llm).
