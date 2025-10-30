@@ -15,7 +15,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v5"
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,41 +48,11 @@ jobs:
           echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Next version: $NEW_VERSION"
       
-      - name: Get commit messages since last tag
-        id: changelog
-        run: |
-          LATEST_TAG="${{ steps.get-latest-tag.outputs.latest-tag }}"
-          
-          # Get commits since last tag
-          if [ "$LATEST_TAG" = "0.0.0" ]; then
-            # If no previous tags, get all commits
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
-          else
-            # Get commits since last tag
-            COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          fi
-          
-          # Create changelog content
-          CHANGELOG="## What's Changed
-          
-          $COMMITS
-          
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/$LATEST_TAG...${{ steps.next-version.outputs.new-version }}"
-          
-          # Save changelog to file to handle multiline content
-          echo "$CHANGELOG" > changelog.md
-          
-          # Also output for debugging
-          echo "Generated changelog:"
-          cat changelog.md
-      
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.next-version.outputs.new-version }}
-          release_name: "${{ steps.next-version.outputs.new-version }}"
-          body_path: changelog.md
+          name: "${{ steps.next-version.outputs.new-version }}"
+          generate_release_notes: true
           draft: false
           prerelease: false
