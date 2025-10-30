@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/datarobot-community/datarobot-agent-templates">
-    <img src="docs/img/datarobot_logo.avif" width="600px" alt="DataRobot Logo"/>
+    <img src=".github/img/datarobot_logo.avif" width="600px" alt="DataRobot Logo"/>
   </a>
 </p>
 <h3 align="center">DataRobot Application Framework</h3>
