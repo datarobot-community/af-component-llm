@@ -23,7 +23,7 @@
   </a>
 </p>
 
-The LLM component provides the Buzok components required for configuring and using the LLM gateway or other LLM choices
+The LLM component provides the components required for configuring and using the LLM gateway or other LLM choices
 such as an already deployed model.
 
 The LLM is a component from the [DataRobot App Framework Studio](https://github.com/datarobot/app-framework-studio)
