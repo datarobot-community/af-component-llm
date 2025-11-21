@@ -23,32 +23,33 @@
   </a>
 </p>
 
-The LLM component provides the Buzok components required for configuring and using the LLM gateway or other LLM choices
+The LLM component provides the components required for configuring and using the LLM gateway or other LLM choices
 such as an already deployed model.
 
 The LLM is a component from the [DataRobot App Framework Studio](https://github.com/datarobot/app-framework-studio)
-
 
 ## Getting Started
 
 To use this template, it expects the base component https://github.com/datarobot/af-component-base has already been
 installed. To do that first, run:
+
 ```bash
 uvx copier copy https://github.com/datarobot/af-component-base .
 # uvx copier copy git@github.com:datarobot/af-component-base.git .
 ```
 
 To add the llm component to your project, you can use the `uvx copier` command to copy the template from this repository:
+
 ```bash
 uvx copier copy https://github.com/datarobot/af-component-llm .
 # uvx copier copy git@github.com:datarobot/af-component-llm.git .
 ```
 
-To update an existing llm template, you can use the `uvx copier update` command. This will update the template files
+To update an existing llm template, you can use the `uvx copier update` command. This will update the template files:
+
 ```bash
 uvx copier update -a .datarobot/answers/llm-{ llm_name }.yml -A
 ```
-
 
 # Get help
 
