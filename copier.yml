@@ -11,7 +11,7 @@ llm_app_name:
 
 llm_app_model_name:
   type: str
-  default: "azure-openai-gpt-4-o"
+  default: "azure-openai-gpt-5-mini"
   help: "Model name to use for the LLM. This is the model name in the model-metadata.yaml file"
 
 base_answers_file:

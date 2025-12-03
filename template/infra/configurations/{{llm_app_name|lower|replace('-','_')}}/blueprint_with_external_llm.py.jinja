@@ -58,15 +58,15 @@ __all__ = [
 default_model: str = (
     "datarobot/datarobot-deployed-llm"  # The blue print model name in DataRobot
 )
-external_model_id: str = "azure-openai-gpt-4-o"  # External LLM ID from the Playground
-external_model_friendly_name: str = "Azure OpenAI GPT-4o"  # Shown in the Web UI
+external_model_id: str = "azure-openai-gpt-5-mini"  # External LLM ID from the Playground
+external_model_friendly_name: str = "Azure OpenAI GPT-5 Mini"  # Shown in the Web UI
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 llm_credential_runtime_params = get_runtime_values(external_model_id)
 # This will ensure your credentials are working properly
 # https://docs.litellm.ai/docs/providers for more details
 # on what string to pass to `verify_llm` This default
-# example is assuming Azure OpenAI with a OPENAI_API_DEPLOYMENT_ID='gpt-4o'.
+# example is assuming Azure OpenAI with a OPENAI_API_DEPLOYMENT_ID='azure-openai-gpt-5-mini'.
 # You combine that with azure/gpt-5-mini-2025-08-07 for LiteLLM to verify the model.
 # Similar instructions exist for Bedrock: https://docs.litellm.ai/docs/providers/bedrock
 # and Vertex: https://docs.litellm.ai/docs/providers/vertex
