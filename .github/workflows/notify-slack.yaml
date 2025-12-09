@@ -14,21 +14,22 @@ jobs:
     steps:
       - name: Send notification to Slack
         if: github.event_name == 'pull_request'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          LABEL_NAME: ${{ github.event.label.name }}
+          PR_NR: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_ADDITIONS: ${{ github.event.pull_request.additions }}
+          PR_DELETIONS: ${{ github.event.pull_request.deletions }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          LABEL_NAME="${{ github.event.label.name }}"
           # Check if label contains 'ready for review' (case-insensitive)
           if ! echo "$LABEL_NAME" | grep -i 'ready for review' >/dev/null; then
             echo "Label does not contain 'ready for review' (case-insensitive), skipping notification."
             exit 0
           fi
-          SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
-          PR_NR="${{ github.event.pull_request.number }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
-          PR_ADDITIONS="${{ github.event.pull_request.additions }}"
-          PR_DELETIONS="${{ github.event.pull_request.deletions }}"
-          REPO_NAME="${{ github.event.repository.name }}"
           
           # Escape special characters for JSON
           PR_TITLE_ESCAPED=$(echo "$PR_TITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
