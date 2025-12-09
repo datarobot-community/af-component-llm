@@ -76,7 +76,8 @@ default_model: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/azure/gpt-5-mini-2025-08-07"
 )
 default_llm_id: str = os.environ.get(
-    "{{llm_app_name|upper}}_DEFAULT_LLM_ID", "azure-openai-gpt-5-mini"  # External LLM ID from the Playground
+    "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
+    "azure-openai-gpt-5-mini"  # External LLM ID from the Playground
 )
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
