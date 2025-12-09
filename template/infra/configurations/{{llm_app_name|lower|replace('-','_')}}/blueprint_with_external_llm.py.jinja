@@ -55,16 +55,20 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_model: str = (
-    "datarobot/datarobot-deployed-llm"  # The blue print model name in DataRobot
+default_model: str = os.environ.get(
+    "{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/azure/gpt-5-mini-2025-08-07"
 )
-external_model_id: str = (
-    "azure-openai-gpt-5-mini"  # External LLM ID from the Playground
+default_llm_id: str = os.environ.get(
+    "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
+    "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
 )
-external_model_friendly_name: str = "Azure OpenAI GPT-5 Mini"  # Shown in the Web UI
+default_llm_friendly_name: str = os.environ.get(
+    "{{llm_app_name|upper}}_DEFAULT_LLM_NAME",
+    "Azure OpenAI GPT-5 Mini",  # Shown in the Web UI
+)
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(external_model_id)
+llm_credential_runtime_params = get_runtime_values(default_llm_id)
 # This will ensure your credentials are working properly
 # https://docs.litellm.ai/docs/providers for more details
 # on what string to pass to `verify_llm` This default
@@ -82,7 +86,7 @@ playground = datarobot.Playground(
 llm_blueprint = datarobot.LlmBlueprint(
     resource_name="LLM Blueprint " + {{llm_app_name}}_resource_name,
     playground_id=playground.id,
-    llm_id=external_model_id,
+    llm_id=default_llm_id,
     llm_settings=datarobot.LlmBlueprintLlmSettingsArgs(
         max_completion_length=2048,
         temperature=0.1,
@@ -145,12 +149,12 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
-        value=external_model_id,
+        value=default_llm_id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_external_model_friendly_name",
+        key="{{llm_app_name|upper}}_default_llm_friendly_name",
         type="string",
-        value=external_model_friendly_name,
+        value=default_llm_friendly_name,
     ),
 ]
 custom_model_runtime_parameters = [
@@ -162,10 +166,10 @@ custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
-        value=external_model_id,
+        value=default_llm_id,
     ),
 ]
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("{{llm_app_name|upper}}_DEPLOYMENT_ID", llm_deployment.id)
-export("{{llm_app_name|upper}}_DEFAULT_MODEL", external_model_id)
-export("{{llm_app_name|upper}}_external_model_friendly_name", external_model_friendly_name)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_llm_id)
+export("{{llm_app_name|upper}}_default_llm_friendly_name", default_llm_friendly_name)
