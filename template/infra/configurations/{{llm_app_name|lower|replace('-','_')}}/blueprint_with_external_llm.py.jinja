@@ -60,11 +60,11 @@ default_model: str = os.environ.get(
 )
 default_llm_id: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
-    "azure-openai-gpt-5-mini"  # External LLM ID from the Playground
+    "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
 )
 default_llm_friendly_name: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_LLM_NAME",
-    "Azure OpenAI GPT-5 Mini"  # Shown in the Web UI
+    "Azure OpenAI GPT-5 Mini",  # Shown in the Web UI
 )
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
