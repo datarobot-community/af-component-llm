@@ -55,7 +55,7 @@ jobs:
         run: |
           uv run ruff format --check --diff .
           uv run ruff check --diff .
-          uvx ty@0.0.1a34 check --verbose .
+          uv tool run ty@0.0.1a34 check --verbose .
         env:
           UV_CACHE_DIR: /.uv_cache
       # - name: Create pulumi stack
