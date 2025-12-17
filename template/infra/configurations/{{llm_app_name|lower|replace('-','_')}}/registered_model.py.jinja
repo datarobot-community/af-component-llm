@@ -85,8 +85,8 @@ proxy_llm_deployment = datarobot.Deployment(
 )
 
 # Use Pulumi apply to verify the registered model LLM once deployed
-proxy_llm_deployment.id.apply(
-    lambda id: verify_llm(model_id=f"{default_model}", deployment_id=id)
+proxy_llm_deployment.id.apply(  # type: ignore[missing-argument]
+    lambda id: verify_llm(model_id=f"{default_model}", deployment_id=id)  # type: ignore[invalid-argument-type]
 )
 
 # Make a LLM Blueprint from the deployed registered model
