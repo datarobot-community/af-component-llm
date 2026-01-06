@@ -1,5 +1,5 @@
 ---
-name: af-component-agent Release
+name: af-component-llm Release
 on:
   push:
     branches: ["main"]
