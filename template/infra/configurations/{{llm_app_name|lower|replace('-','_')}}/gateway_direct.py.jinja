@@ -96,6 +96,28 @@ custom_model_runtime_parameters = [
         type="string",
         value=default_model,
     ),
+    # Enable DRUM gunicorn/gevent server with a background event loop
+    # so that async operations can run on DRUM's shared loop.
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="CUSTOM_MODEL_WORKERS",
+        type="numeric",
+        value="1",
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="DRUM_SERVER_TYPE",
+        type="string",
+        value="gunicorn",
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="DRUM_GUNICORN_WORKER_CLASS",
+        type="string",
+        value="gevent",
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="DRUM_WORKER_CONNECTIONS",
+        type="numeric",
+        value="100",
+    ),
 ]
 export("USE_DATAROBOT_LLM_GATEWAY", "1")
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
