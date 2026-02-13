@@ -1,0 +1,47 @@
+name: PR Automation
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [labeled, opened, edited]
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  mark-reviewed:
+    if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
+    uses: datarobot-oss/github-actions/.github/workflows/mark-pr-reviewed.yaml@0.0.3
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+
+  notify-ready-for-review:
+    if: github.event_name == 'pull_request' && contains(github.event.label.name, 'ready for review')
+    uses: datarobot-oss/github-actions/.github/workflows/mark-pr-to-review.yaml@0.0.3
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+      pr_url: ${{ github.event.pull_request.html_url }}
+      pr_title: ${{ github.event.pull_request.title }}
+      pr_author: ${{ github.event.pull_request.user.login }}
+      pr_additions: ${{ github.event.pull_request.additions }}
+      pr_deletions: ${{ github.event.pull_request.deletions }}
+      repo_name: ${{ github.event.repository.name }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  add-jira-link:
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'edited')
+    uses: datarobot-oss/github-actions/.github/workflows/add-jira-link.yaml@0.0.3
+    with:
+      pr_title: ${{ github.event.pull_request.title }}
+      pr_number: ${{ github.event.pull_request.number }}
+      pr_branch: ${{ github.head_ref }}
+    permissions:
+      pull-requests: write
+
+  notify-slack-scheduled:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: datarobot-oss/github-actions/.github/workflows/notify-slack.yaml@0.0.3
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
