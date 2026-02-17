@@ -26,14 +26,11 @@ import logging
 import datarobot
 import pulumi
 import pulumi_datarobot
-from litellm import completion
-
-
-from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.common.feature_flags import (
     eval_feature_flag_statuses,
     FeatureFlagSet,
 )
+from litellm import completion
 
 INFRA_DIR = Path(__file__).parent
 
@@ -126,7 +123,7 @@ class ProviderCredential:
                 )
             elif param.type == "credential":
                 credential = pulumi_datarobot.ApiTokenCredential(
-                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} [{{llm_app_name}}]",
                     api_token=os.environ.get(param.key),
                 )
                 runtime_values.append(
@@ -136,7 +133,7 @@ class ProviderCredential:
                 )
             elif param.type == "google_credential":
                 credential = pulumi_datarobot.GoogleCloudCredential(
-                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} [{{llm_app_name}}]",
                     gcp_key=os.environ.get(param.key),
                 )
                 runtime_values.append(
@@ -148,7 +145,7 @@ class ProviderCredential:
                 )
             elif param.type == "aws_credential":
                 credential = pulumi_datarobot.AwsCredential(
-                    resource_name=f"{pulumi.get_project()} {param.key} Credential [{PROJECT_NAME}]",
+                    resource_name=f"{pulumi.get_project()} {param.key} [{{llm_app_name}}]",
                     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
                     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
                     aws_session_token=os.environ.get("AWS_SESSION_TOKEN"),
