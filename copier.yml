@@ -9,6 +9,11 @@ llm_app_name:
     {% elif not llm_app_name.isidentifier() %}ERROR: LLM app name must be a valid Python identifier (letters, numbers, underscores only, cannot start with number)
     {% endif %}
 
+llm_app_name_file:
+  type: str
+  default: "{{llm_app_name|lower|replace('-','_')}}"
+  when: false
+
 llm_app_model_name:
   type: str
   default: "azure-openai-gpt-5-mini"

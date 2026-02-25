@@ -10,6 +10,20 @@ tasks:
         - cd ./$RENDER_DIR/infra && uv run ruff format --check --diff .
         - cd ./$RENDER_DIR/infra && uv run ruff check --diff .
         - cd ./$RENDER_DIR/infra && uv tool run ty@0.0.1a34 check --verbose .
+  validate-windows-compatibility:
+    desc: "Validate that file paths don't contain characters illegal on Windows"
+    cmds:
+      - cmd: |
+          offending_files=$(find . -type f -exec basename {} \; | grep '[\<\>\:\"\/\|\?\*]' | sort -u)
+          if [ -n "$offending_files" ]; then
+            echo "Files with Windows-incompatible characters found:"
+            for file in $offending_files; do
+              find . -type f -name "$file"
+            done
+            exit 1
+          fi
+        platforms: [linux, darwin]
+
   copyright:
     aliases: [license]
     desc: 📜 Apply license headers
