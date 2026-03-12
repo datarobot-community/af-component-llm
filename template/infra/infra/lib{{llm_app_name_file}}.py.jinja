@@ -305,7 +305,11 @@ def verify_llm_gateway_model_availability(model_id: str) -> None:
         )
 
 
-def verify_llm(model_id: str | None = None, deployment_id: str | None = None) -> None:
+def verify_llm(
+    model_id: str | None = None,
+    deployment_id: str | None = None,
+    use_llm_gateway: bool = False,
+) -> None:
     """
     Verify that the specified LLM is valid, available, and you can say hello
     """
@@ -336,6 +340,17 @@ def verify_llm(model_id: str | None = None, deployment_id: str | None = None) ->
         if provider in provider_aliases:
             provider = provider_aliases[provider]
             model_id = provider + "/" + "-".join(model_id.split("-")[1:])
+
+        use_llm_gateway_enabled = use_llm_gateway or os.environ.get(
+            "USE_DATAROBOT_LLM_GATEWAY", ""
+        ).lower() in {"1", "true", "yes"}
+        if use_llm_gateway_enabled and provider != "datarobot":
+            err_message = f"""Default model must be prefixed with 'datarobot/' provider when using LLM gateway.
+            Edit the 'LLM_DEFAULT_MODEL' environment variable to include the prefix and run again.
+            Example value: 'LLM_DEFAULT_MODEL=datarobot/{model_id}'
+            """
+            raise ValueError(err_message)
+
     # Map common aliases to their canonical provider names
     provider = provider_aliases.get(provider, provider)
     response = completion(
