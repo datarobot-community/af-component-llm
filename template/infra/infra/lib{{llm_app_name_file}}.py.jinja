@@ -329,6 +329,16 @@ def verify_llm(
     if model_id is None:
         raise ValueError("model_id must be provided to verify_llm")
 
+    use_llm_gateway_enabled = use_llm_gateway or os.environ.get(
+        "USE_DATAROBOT_LLM_GATEWAY", ""
+    ).lower() in {"1", "true", "yes"}
+    if use_llm_gateway_enabled and not model_id.startswith("datarobot/"):
+        err_message = f"""Default model must be prefixed with 'datarobot/' provider when using LLM gateway.
+        Edit the '{{llm_app_name|upper}}_DEFAULT_MODEL' environment variable to include the prefix and run again.
+        Example value: '{{llm_app_name|upper}}_DEFAULT_MODEL=datarobot/{model_id}'
+        """
+        raise ValueError(err_message)
+
     # Map legacy to LiteLLM
     if "-" in model_id:
         provider_aliases = {
@@ -340,17 +350,6 @@ def verify_llm(
         if provider in provider_aliases:
             provider = provider_aliases[provider]
             model_id = provider + "/" + "-".join(model_id.split("-")[1:])
-
-        use_llm_gateway_enabled = use_llm_gateway or os.environ.get(
-            "USE_DATAROBOT_LLM_GATEWAY", ""
-        ).lower() in {"1", "true", "yes"}
-        if use_llm_gateway_enabled and not model_id.startswith("datarobot/"):
-            err_message = f"""Default model must be prefixed with 'datarobot/' provider when using LLM gateway.
-            Edit the 'LLM_DEFAULT_MODEL' environment variable to include the prefix and run again.
-            Example value: 'LLM_DEFAULT_MODEL=datarobot/{model_id}'
-            """
-            raise ValueError(err_message)
-
     # Map common aliases to their canonical provider names
     provider = provider_aliases.get(provider, provider)
     response = completion(
