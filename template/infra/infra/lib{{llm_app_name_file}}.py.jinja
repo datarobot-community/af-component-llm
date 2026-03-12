@@ -344,7 +344,7 @@ def verify_llm(
         use_llm_gateway_enabled = use_llm_gateway or os.environ.get(
             "USE_DATAROBOT_LLM_GATEWAY", ""
         ).lower() in {"1", "true", "yes"}
-        if use_llm_gateway_enabled and provider != "datarobot":
+        if use_llm_gateway_enabled and not model_id.startswith("datarobot/"):
             err_message = f"""Default model must be prefixed with 'datarobot/' provider when using LLM gateway.
             Edit the 'LLM_DEFAULT_MODEL' environment variable to include the prefix and run again.
             Example value: 'LLM_DEFAULT_MODEL=datarobot/{model_id}'
