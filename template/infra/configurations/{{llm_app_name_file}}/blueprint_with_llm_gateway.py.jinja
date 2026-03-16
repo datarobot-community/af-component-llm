@@ -88,7 +88,7 @@ verify_llm_gateway_model_availability(default_model)
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available
-verify_llm(f"{default_model}")
+verify_llm(f"{default_model}", use_llm_gateway=True)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
