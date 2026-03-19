@@ -26,6 +26,7 @@ root:
     options:
       - name: "LLM Gateway"
         value: "gateway_direct.py"
+        requires: llm_gateway
       - name: "DataRobot Deployed LLM"
         value: "deployed_llm.py"
         requires: deployed_llm
@@ -37,6 +38,12 @@ root:
       - name: "Registered Model with an LLM Blueprint"
         value: "registered_model.py"
         requires: registered_model
+
+llm_gateway:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: llmgw_catalog
+    optional: false
+    help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 deployed_llm:
   - env: TEXTGEN_DEPLOYMENT_ID
@@ -56,7 +63,7 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
-  - env: LLM_DEFAULT_MODEL
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
     default: "azure-openai-gpt-5-mini"
     optional: true
