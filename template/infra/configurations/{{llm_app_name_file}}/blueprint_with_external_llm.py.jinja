@@ -68,7 +68,7 @@ default_llm_friendly_name: str = os.environ.get(
 )
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(default_model)
+llm_credential_runtime_params = get_runtime_values(default_llm_id)
 # This will ensure your credentials are working properly
 # https://docs.litellm.ai/docs/providers for more details
 # on what string to pass to `verify_llm` This default
