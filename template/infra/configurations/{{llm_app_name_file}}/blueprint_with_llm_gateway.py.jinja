@@ -27,7 +27,7 @@ from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 
-from . import use_case
+from . import prediction_environment, use_case
 from .lib{{ llm_app_name|lower|replace('-','_')}} import (
     validate_feature_flags,
     verify_llm,
@@ -115,11 +115,6 @@ llm_custom_model = datarobot.CustomModel(
     base_environment_id=RuntimeEnvironments.PYTHON_312_MODERATIONS.value.id,
     use_case_ids=[use_case.id],
     source_llm_blueprint_id=llm_blueprint.id,
-)
-
-prediction_environment = datarobot.PredictionEnvironment(
-    resource_name="LLM Prediction Environment " + {{llm_app_name}}_resource_name,
-    platform=dr.enums.PredictionEnvironmentPlatform.DATAROBOT_SERVERLESS,
 )
 
 # Register the custom model

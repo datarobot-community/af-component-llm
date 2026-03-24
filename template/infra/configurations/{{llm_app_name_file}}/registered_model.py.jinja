@@ -26,7 +26,7 @@ from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 import pulumi
 import pulumi_datarobot as datarobot
 
-from . import use_case
+from . import prediction_environment, use_case
 from .lib{{ llm_app_name|lower|replace('-','_')}} import (
     validate_feature_flags,
     verify_llm,
@@ -67,11 +67,6 @@ playground = datarobot.Playground(
 proxy_llm_registered_model = datarobot.RegisteredModel.get(
     resource_name="Existing TextGen Registered Model",
     id=TEXTGEN_REGISTERED_MODEL_ID,
-)
-
-prediction_environment = datarobot.PredictionEnvironment(
-    resource_name="LLM Prediction Environment " + {{llm_app_name}}_resource_name,
-    platform=dr.enums.PredictionEnvironmentPlatform.DATAROBOT_SERVERLESS,
 )
 
 # Create the deployment for the passed in registered model
