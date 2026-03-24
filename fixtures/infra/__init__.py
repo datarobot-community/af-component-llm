@@ -39,7 +39,9 @@ else:
         description="""This is a template for DataRobot Agents.""",
     )
 
-if prediction_environment_id := os.environ.get("DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT"):
+if prediction_environment_id := os.environ.get(
+    "DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT"
+):
     pulumi.info(f"Using existing prediction environment '{prediction_environment_id}'")
 
     prediction_environment = datarobot.PredictionEnvironment.get(
