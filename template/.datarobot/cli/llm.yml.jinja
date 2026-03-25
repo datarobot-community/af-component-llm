@@ -23,6 +23,10 @@ root:
 
       an LLM Blueprint, select "Registered Model with an LLM Blueprint".
 
+      - If you have an OpenAI-compatible endpoint (e.g. Ollama, vLLM, a custom server),
+
+      select "OpenAI Compatible Endpoint".
+
     options:
       - name: "LLM Gateway"
         value: "gateway_direct.py"
@@ -39,6 +43,9 @@ root:
       - name: "Registered Model with an LLM Blueprint"
         value: "registered_model.py"
         requires: registered_model
+      - name: "OpenAI Compatible Endpoint"
+        value: "blueprint_with_openai_compat.py"
+        requires: openai_compat
 
 llm_gateway:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
@@ -153,4 +160,18 @@ togetherai:
     type: string
     optional: false
     help: "Enter the API key for TogetherAI."
+
+openai_compat:
+  - env: OPENAI_API_BASE
+    type: string
+    optional: false
+    help: "Enter the base URL of your OpenAI-compatible endpoint (e.g., http://localhost:11434/v1 for Ollama)."
+  - env: OPENAI_API_TOKEN
+    type: string
+    optional: false
+    help: "Enter the API token for your OpenAI-compatible endpoint."
+  - env: LLM_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: "Enter the model name as your endpoint expects it (e.g., llama3, gpt-4o, mistral)."
 

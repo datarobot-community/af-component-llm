@@ -217,6 +217,14 @@ PROVIDER_CREDENTIALS_MAP = {
             RuntimeParameterValueArgs(key="TOGETHERAI_API_KEY", type="credential"),
         ],
     ),
+    "openai": ProviderCredential(
+        provider="openai",
+        env_vars=["OPENAI_API_KEY", "OPENAI_API_BASE"],
+        runtime_parameters=[
+            RuntimeParameterValueArgs(key="OPENAI_API_KEY", type="credential"),
+            RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
+        ],
+    ),
 }
 
 
