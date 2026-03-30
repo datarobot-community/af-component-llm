@@ -26,6 +26,7 @@ runs:
           cp ./fixtures/infra/pyproject.toml ./rendered/infra/pyproject.toml
           cp ./fixtures/infra/__init__.py ./rendered/infra/infra/__init__.py
           cp ./fixtures/infra/Pulumi.yaml ./rendered/infra/Pulumi.yaml
+          cp -r ./fixtures/infra/tests ./rendered/infra/tests
           touch ./rendered/infra/__init__.py
         else
           # Running on host, use docker container
@@ -38,6 +39,7 @@ runs:
             cp ./fixtures/infra/pyproject.toml ./rendered/infra/pyproject.toml
             cp ./fixtures/infra/__init__.py ./rendered/infra/infra/__init__.py
             cp ./fixtures/infra/Pulumi.yaml ./rendered/infra/Pulumi.yaml
+            cp -r ./fixtures/infra/tests ./rendered/infra/tests
             touch ./rendered/infra/__init__.py
           "
         fi

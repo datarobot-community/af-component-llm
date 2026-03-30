@@ -58,18 +58,10 @@ jobs:
           uv tool run ty@0.0.1a34 check --verbose .
         env:
           UV_CACHE_DIR: /.uv_cache
-      # - name: Create pulumi stack
-      #   working-directory: ./rendered/infra
-      #   run: |
-      #     pulumi login --local
-      #     pulumi stack init -s organization/unittest/unittest
-      #   env:
-      #     PULUMI_CONFIG_PASSPHRASE: "123"
-      # - name: Run unit tests
-      #   shell: sh
-      #   working-directory: ./rendered
-      #   run: |
-      #     uvx --from go-task-bin task infra:test-coverage
-      #   env:
-      #     UV_CACHE_DIR: /.uv_cache
-      #     PULUMI_CONFIG_PASSPHRASE: "123"
+      - name: Run unit tests
+        shell: sh
+        working-directory: ./rendered/infra
+        run: |
+          uv run pytest tests/
+        env:
+          UV_CACHE_DIR: /.uv_cache
