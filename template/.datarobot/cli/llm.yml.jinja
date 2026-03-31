@@ -248,9 +248,7 @@ openai_compat:
   - env: LLM_DEFAULT_MODEL
     type: string
     optional: false
-    help: >
-      Enter the model name as your endpoint expects it (e.g., llama3, gpt-4o, mistral).
-      The OpenAI-compat infra module adds the LiteLLM openai/ prefix when it is not already present.
+    help: Enter the model name as your endpoint expects it (e.g., llama3, gpt-4o, mistral).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "openai_compat.py"
