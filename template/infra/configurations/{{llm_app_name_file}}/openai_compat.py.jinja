@@ -14,7 +14,7 @@
 """
 Choose this option when you have an OpenAI-compatible endpoint
 (e.g. Ollama, vLLM, a custom inference server). Set OPENAI_API_BASE to your endpoint's
-base URL, OPENAI_API_TOKEN to your API token, and LLM_DEFAULT_MODEL to the model name
+base URL, OPENAI_API_KEY to your API key, and LLM_DEFAULT_MODEL to the model name
 your endpoint expects.
 """
 
@@ -45,10 +45,6 @@ REQUIRED_FEATURE_FLAGS = {
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 
-# Cross-map OPENAI_API_TOKEN -> OPENAI_API_KEY for LiteLLM compatibility
-if not os.environ.get("OPENAI_API_KEY"):
-    os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_TOKEN", "")
-
 _raw_model: str = os.environ.get(
     "LLM_DEFAULT_MODEL",
     os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "gpt-4o"),
@@ -66,9 +62,9 @@ validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 # See https://docs.litellm.ai/docs/providers/openai_compatible for details.
 verify_llm(default_model)
 
-openai_api_token_credential = datarobot.ApiTokenCredential(
-    resource_name=f"{pulumi.get_project()} OPENAI_API_TOKEN [{{llm_app_name}}]",
-    api_token=os.environ.get("OPENAI_API_TOKEN", ""),
+openai_api_key_credential = datarobot.ApiTokenCredential(
+    resource_name=f"{pulumi.get_project()} OPENAI_API_KEY [{{llm_app_name}}]",
+    api_token=os.environ.get("OPENAI_API_KEY", ""),
 )
 
 app_runtime_parameters = [
@@ -78,9 +74,9 @@ app_runtime_parameters = [
         value=os.environ.get("OPENAI_API_BASE", ""),
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="OPENAI_API_TOKEN",
+        key="OPENAI_API_KEY",
         type="credential",
-        value=openai_api_token_credential.id,
+        value=openai_api_key_credential.id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
@@ -95,9 +91,9 @@ custom_model_runtime_parameters = [
         value=os.environ.get("OPENAI_API_BASE", ""),
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key="OPENAI_API_TOKEN",
+        key="OPENAI_API_KEY",
         type="credential",
-        value=openai_api_token_credential.id,
+        value=openai_api_key_credential.id,
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
