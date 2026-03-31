@@ -68,6 +68,10 @@ blueprint_with_llm_gateway:
     default: "blueprint_with_llm_gateway.py"
     optional: false
     help: "Active infra LLM config file (default: blueprint_with_llm_gateway.py)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: llmgw_catalog
+    optional: false
+    help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 registered_model:
   - env: INFRA_ENABLE_LLM
@@ -127,6 +131,12 @@ azure_openai:
     type: string
     optional: false
     help: "Enter the OpenAI API version (e.g., 2024-08-01-preview)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Azure OpenAI (e.g., azure/gpt-5-mini-2025-08-07).
+      It must be consistent with OPENAI_API_DEPLOYMENT_ID and the Azure model deployment.
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
@@ -146,6 +156,12 @@ bedrock:
     type: string
     optional: false
     help: "Enter the AWS region name for Bedrock (e.g., us-east-1)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Amazon Bedrock (e.g.,
+      bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
@@ -161,6 +177,11 @@ vertexai:
     type: string
     optional: false
     help: "Enter the Google service account email."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Vertex AI (e.g., vertex_ai/gemini-1.5-pro).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
@@ -172,6 +193,11 @@ anthropic:
     type: string
     optional: false
     help: "Enter the API key for Anthropic."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Anthropic (e.g., anthropic/claude-3-5-sonnet-20240620).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
@@ -183,6 +209,11 @@ cohere:
     type: string
     optional: false
     help: "Enter the API key for Cohere."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Cohere (e.g., cohere/command-r-plus).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
@@ -194,6 +225,11 @@ togetherai:
     type: string
     optional: false
     help: "Enter the API key for TogetherAI."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Together AI (e.g., together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo).
   - env: INFRA_ENABLE_LLM
     type: string
     default: "blueprint_with_external_llm.py"
