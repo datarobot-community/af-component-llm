@@ -21,6 +21,7 @@ your endpoint expects.
 import os
 
 from datarobot_pulumi_utils.pulumi import export
+import pulumi
 import pulumi_datarobot as datarobot
 
 from .lib{{ llm_app_name|lower|replace('-','_')}} import (
@@ -65,6 +66,11 @@ validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 # See https://docs.litellm.ai/docs/providers/openai_compatible for details.
 verify_llm(default_model)
 
+openai_api_token_credential = datarobot.ApiTokenCredential(
+    resource_name=f"{pulumi.get_project()} OPENAI_API_TOKEN [{{llm_app_name}}]",
+    api_token=os.environ.get("OPENAI_API_TOKEN", ""),
+)
+
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="OPENAI_API_BASE",
@@ -74,7 +80,7 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="OPENAI_API_TOKEN",
         type="credential",
-        value=os.environ.get("OPENAI_API_TOKEN", ""),
+        value=openai_api_token_credential.id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
@@ -91,7 +97,7 @@ custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="OPENAI_API_TOKEN",
         type="credential",
-        value=os.environ.get("OPENAI_API_TOKEN", ""),
+        value=openai_api_token_credential.id,
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_DEFAULT_MODEL",
