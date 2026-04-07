@@ -47,10 +47,14 @@ llm_gateway:
     help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 deployed_llm:
-  - env: TEXTGEN_DEPLOYMENT_ID
+  - env: {{llm_app_name|upper}}_DEPLOYMENT_ID
     type: string
     optional: false
     help: "Enter the deployment ID of the DataRobot custom model deployed LLM (e.g., 6510c7b7c4f3f9407e24a849)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
 
 registered_model:
   - env: TEXTGEN_REGISTERED_MODEL_ID
