@@ -59,25 +59,30 @@ __all__ = [
 default_model: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/azure/gpt-5-mini-2025-08-07"
 )
+# Configure can optionally provide an explicit LLM catalog id.
+# This is required for providers/options where a different LLM definition is needed.
 default_llm_id: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
     "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
 )
 default_llm_friendly_name: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_LLM_NAME",
-    "Azure OpenAI GPT-5 Mini",  # Shown in the Web UI
+    default_model,  # Shown in the Web UI
 )
 
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(default_llm_id)
+# Runtime credentials should follow the selected provider model string.
+# `default_llm_id` is for DataRobot LLM Blueprint selection, not credential mapping.
+credential_model: str = default_model.removeprefix("datarobot/")
+llm_credential_runtime_params = get_runtime_values(credential_model)
 # This will ensure your credentials are working properly
 # https://docs.litellm.ai/docs/providers for more details
-# on what string to pass to `verify_llm` This default
-# example is assuming Azure OpenAI with a OPENAI_API_DEPLOYMENT_ID='azure-openai-gpt-5-mini'.
-# You combine that with azure/gpt-5-mini-2025-08-07 for LiteLLM to verify the model.
-# Similar instructions exist for Bedrock: https://docs.litellm.ai/docs/providers/bedrock
-# and Vertex: https://docs.litellm.ai/docs/providers/vertex
-verify_llm(f"azure/{os.getenv('OPENAI_API_DEPLOYMENT_ID')}")
+# on what string to pass to `verify_llm`.
+# Example provider/model strings:
+# - azure/gpt-5-mini-2025-08-07
+# - bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0
+# - openai/gpt-4o
+verify_llm(default_model)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,

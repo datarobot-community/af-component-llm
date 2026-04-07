@@ -20,6 +20,7 @@ jobs:
           - blueprint_with_llm_gateway
           - deployed_llm
           - blueprint_with_external_llm
+          - openai_compat
     container:
       image: ghcr.io/astral-sh/uv:python3.11-bookworm
     steps:
