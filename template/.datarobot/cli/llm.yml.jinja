@@ -1,7 +1,8 @@
 ---
 root:
-  - key: llm_integration
-    optional: false
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "gateway_direct.py"
     help: >
       Choose your LLM integration.
 
@@ -26,59 +27,33 @@ root:
 
     options:
       - name: "LLM Gateway"
+        value: "gateway_direct.py"
         requires: llm_gateway
       - name: "DataRobot Deployed LLM"
+        value: "deployed_llm.py"
         requires: deployed_llm
       - name: "External LLM"
+        value: "blueprint_with_external_llm.py"
         requires: external_llm
       - name: "LLM Gateway with External Model"
-        requires: blueprint_with_llm_gateway
+        value: "blueprint_with_llm_gateway.py"
       - name: "Registered Model with an LLM Blueprint"
+        value: "registered_model.py"
         requires: registered_model
 
 llm_gateway:
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "gateway_direct.py"
-    optional: false
-    help: "Active infra LLM config file (default: gateway_direct.py)."
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: llmgw_catalog
     optional: false
     help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 deployed_llm:
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "deployed_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: deployed_llm.py)."
   - env: TEXTGEN_DEPLOYMENT_ID
     type: string
     optional: false
     help: "Enter the deployment ID of the DataRobot custom model deployed LLM (e.g., 6510c7b7c4f3f9407e24a849)."
-  - env: USE_DATAROBOT_LLM_GATEWAY
-    type: string
-    default: "0"
-    hidden: true
-
-blueprint_with_llm_gateway:
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_llm_gateway.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_llm_gateway.py)."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: llmgw_catalog
-    optional: false
-    help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 registered_model:
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "registered_model.py"
-    optional: false
-    help: "Active infra LLM config file (default: registered_model.py)."
   - env: TEXTGEN_REGISTERED_MODEL_ID
     type: string
     optional: false
@@ -90,6 +65,11 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "azure-openai-gpt-5-mini"
+    optional: true
+    help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
   - key: external_llm_provider
     optional: false
     options:
@@ -131,17 +111,6 @@ azure_openai:
     type: string
     optional: false
     help: "Enter the OpenAI API version (e.g., 2024-08-01-preview)."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Azure OpenAI (e.g., azure/gpt-5-mini-2025-08-07).
-      It must be consistent with OPENAI_API_DEPLOYMENT_ID and the Azure model deployment.
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 bedrock:
   - env: AWS_ACCESS_KEY_ID
@@ -156,17 +125,6 @@ bedrock:
     type: string
     optional: false
     help: "Enter the AWS region name for Bedrock (e.g., us-east-1)."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Amazon Bedrock (e.g.,
-      bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0).
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 vertexai:
   - env: VERTEXAI_APPLICATION_CREDENTIALS
@@ -177,64 +135,24 @@ vertexai:
     type: string
     optional: false
     help: "Enter the Google service account email."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Vertex AI (e.g., vertex_ai/gemini-1.5-pro).
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 anthropic:
   - env: ANTHROPIC_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Anthropic."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Anthropic (e.g., anthropic/claude-3-5-sonnet-20240620).
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 cohere:
   - env: COHERE_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Cohere."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Cohere (e.g., cohere/command-r-plus).
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 togetherai:
   - env: TOGETHERAI_API_KEY
     type: string
     optional: false
     help: "Enter the API key for TogetherAI."
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    optional: false
-    help: >
-      Enter the LiteLLM model string for Together AI (e.g., together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo).
-  - env: INFRA_ENABLE_LLM
-    type: string
-    default: "blueprint_with_external_llm.py"
-    optional: false
-    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 openai_compat:
   - env: OPENAI_API_BASE
