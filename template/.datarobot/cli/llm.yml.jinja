@@ -91,11 +91,6 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    default: "azure-openai-gpt-5-mini"
-    optional: false
-    help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
   - key: external_llm_provider
     optional: false
     options:
