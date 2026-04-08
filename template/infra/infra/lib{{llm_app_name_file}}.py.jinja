@@ -239,8 +239,12 @@ def get_runtime_values(
         provider = model_id.split("-")[0]
     else:
         provider = model_id
-    # Map common aliases to their canonical provider names
-    provider_aliases = {"amazon": "bedrock", "google": "vertex_ai"}
+    # Map common aliases to PROVIDER_CREDENTIALS_MAP keys (LiteLLM uses together_ai/...)
+    provider_aliases = {
+        "amazon": "bedrock",
+        "google": "vertex_ai",
+        "together_ai": "togetherai",
+    }
     provider = provider_aliases.get(provider, provider)
     credential = PROVIDER_CREDENTIALS_MAP[provider]
     return credential.runtime_parameter_values
