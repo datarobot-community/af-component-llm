@@ -13,12 +13,12 @@
 # limitations under the License.
 """
 Choose this option when you have an OpenAI-compatible endpoint
-(e.g. Ollama, vLLM, a custom inference server). Set OPENAI_API_BASE to your endpoint's
+(e.g. Ollama, vLLM, a custom inference server). Set OPENAI_BASE_URL to your endpoint's
 base URL, OPENAI_API_KEY to your API key, and {{llm_app_name|upper}}_DEFAULT_MODEL
 to the model name your endpoint expects (e.g., openai/llama3, openai/gpt-4o).
 
 This configuration does not create a DataRobot LLM Blueprint or intermediate proxy
-deployment. Instead, OPENAI_API_BASE and OPENAI_API_KEY are injected directly into
+deployment. Instead, OPENAI_BASE_URL and OPENAI_API_KEY are injected directly into
 the agent's runtime environment so the agent calls your endpoint directly via LiteLLM.
 """
 
@@ -62,7 +62,7 @@ default_model: str = (
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 
 # Verify your OpenAI-compatible endpoint is reachable.
-# LiteLLM picks up OPENAI_API_BASE and OPENAI_API_KEY from the environment.
+# LiteLLM picks up OPENAI_BASE_URL and OPENAI_API_KEY from the environment.
 # See https://docs.litellm.ai/docs/providers/openai_compatible for details.
 verify_llm(default_model)
 
@@ -73,9 +73,9 @@ openai_api_key_credential = datarobot.ApiTokenCredential(
 
 app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="OPENAI_API_BASE",
+        key="OPENAI_BASE_URL",
         type="string",
-        value=os.environ.get("OPENAI_API_BASE", ""),
+        value=os.environ.get("OPENAI_BASE_URL", ""),
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="OPENAI_API_KEY",
@@ -90,9 +90,9 @@ app_runtime_parameters = [
 ]
 custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key="OPENAI_API_BASE",
+        key="OPENAI_BASE_URL",
         type="string",
-        value=os.environ.get("OPENAI_API_BASE", ""),
+        value=os.environ.get("OPENAI_BASE_URL", ""),
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="OPENAI_API_KEY",
@@ -105,5 +105,5 @@ custom_model_runtime_parameters = [
         value=default_model,
     ),
 ]
-export("OPENAI_API_BASE", os.environ.get("OPENAI_API_BASE", ""))
+export("OPENAI_BASE_URL", os.environ.get("OPENAI_BASE_URL", ""))
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
