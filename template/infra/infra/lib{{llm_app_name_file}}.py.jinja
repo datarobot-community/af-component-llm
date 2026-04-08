@@ -347,19 +347,19 @@ def verify_llm(
         """
         raise ValueError(err_message)
 
-    # Map legacy to LiteLLM
-    if "-" in model_id:
-        provider_aliases = {
-            "azure": "azure",
-            "amazon": "bedrock",
-            "google": "vertex_ai",
-        }
-        provider = model_id.split("-")[0]
-        if provider in provider_aliases:
-            provider = provider_aliases[provider]
-            model_id = provider + "/" + "-".join(model_id.split("-")[1:])
-    # Map common aliases to their canonical provider names
-    provider = provider_aliases.get(provider, provider)
+    provider_aliases = {
+        "azure": "azure",
+        "amazon": "bedrock",
+        "google": "vertex_ai",
+    }
+
+    # Normalize legacy model identifiers to LiteLLM provider/model format.
+    if "/" in model_id:
+        provider, model_name = model_id.split("/", 1)
+        model_id = f"{provider_aliases.get(provider, provider)}/{model_name}"
+    elif "-" in model_id:
+        provider, model_name = model_id.split("-", 1)
+        model_id = f"{provider_aliases.get(provider, provider)}/{model_name}"
     response = completion(
         model=model_id,
         messages=[{"content": "Hi", "role": "user"}],
