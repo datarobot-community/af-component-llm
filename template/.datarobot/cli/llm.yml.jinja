@@ -42,6 +42,7 @@ llm_gateway:
     type: string
     default: "gateway_direct.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: gateway_direct.py)."
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: llmgw_catalog
@@ -53,6 +54,7 @@ deployed_llm:
     type: string
     default: "deployed_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: deployed_llm.py)."
   - env: {{llm_app_name|upper}}_DEPLOYMENT_ID
     type: string
@@ -68,6 +70,7 @@ blueprint_with_llm_gateway:
     type: string
     default: "blueprint_with_llm_gateway.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_llm_gateway.py)."
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: llmgw_catalog
@@ -79,6 +82,7 @@ registered_model:
     type: string
     default: "registered_model.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: registered_model.py)."
   - env: TEXTGEN_REGISTERED_MODEL_ID
     type: string
@@ -142,6 +146,7 @@ azure_openai:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 bedrock:
@@ -167,6 +172,7 @@ bedrock:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 vertexai:
@@ -187,6 +193,7 @@ vertexai:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 anthropic:
@@ -203,6 +210,7 @@ anthropic:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 cohere:
@@ -219,6 +227,7 @@ cohere:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 togetherai:
@@ -235,6 +244,7 @@ togetherai:
     type: string
     default: "blueprint_with_external_llm.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 openai_compat:
@@ -256,4 +266,5 @@ openai_compat:
     type: string
     default: "openai_compat.py"
     optional: false
+    hidden: true
     help: "Active infra LLM config file (default: openai_compat.py)."
