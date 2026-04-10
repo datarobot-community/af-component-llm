@@ -28,7 +28,7 @@ The LLM inference component. Deploys and/or configures LLM models or uses the Da
 
 The `af-component-llm` component adds LLM inference capabilities to any [DataRobot App Framework](https://af.datarobot.com) project. It is intended for application developers building AI-powered apps on DataRobot who need a flexible, governed path to LLM access — whether through the DataRobot LLM Gateway, an already-deployed custom model, or an external provider such as Azure OpenAI, AWS Bedrock, or Google Vertex AI.
 
-The component ships a Pulumi-based infrastructure module and a DataRobot CLI configuration file. When applied with `dr component add` (or `uvx copier copy`), it generates a Python infrastructure module, a CLI metadata file, and a stored answers file scoped to your chosen LLM configuration strategy. Because the component is `repeatable`, you can apply it multiple times to the same project to configure separate LLM instances under different names.
+The component ships a Pulumi-based infrastructure module and a DataRobot CLI configuration file. When applied with `dr component add` (or `uvx copier copy`), it generates a Python infrastructure module, a CLI metadata file, and a stored answers file scoped to your chosen LLM configuration strategy. Because the component is repeatable, you can apply it multiple times to the same project to configure separate LLM instances under different names.
 
 
 # Table of contents
@@ -38,6 +38,7 @@ The component ships a Pulumi-based infrastructure module and a DataRobot CLI con
 - [Component dependencies](#component-dependencies)
 - [Configuration strategies](#configuration-strategies)
 - [Local development](#local-development)
+- [Updating](#updating)
 - [Troubleshooting](#troubleshooting)
 - [Next steps and cross-links](#next-steps-and-cross-links)
 - [Contributing, changelog, support, and legal](#contributing-changelog-support-and-legal)
@@ -45,12 +46,14 @@ The component ships a Pulumi-based infrastructure module and a DataRobot CLI con
 
 # Prerequisites
 
+Before applying this component, make sure you have the following tools and access in place.
+
 - Python 3.11+
 - [`uv`](https://docs.astral.sh/uv/) installed
 - [`dr`](https://cli.datarobot.com) installed
-- The [`af-component-base`](https://github.com/datarobot-community/af-component-base) component already applied to your project
-- A DataRobot account with access to the LLM Gateway or the ability to deploy custom models (depending on the configuration strategy you choose)
-- For external LLM providers (Azure, Bedrock, Vertex AI, Anthropic, Cohere, TogetherAI): valid credentials for the chosen provider
+- The [`af-component-base`](https://github.com/datarobot-community/af-component-base) component already applied to your project.
+- A DataRobot account with access to the LLM Gateway or the ability to deploy custom models (depending on the configuration strategy you choose).
+- For external LLM providers (Azure, Bedrock, Vertex AI, Anthropic, Cohere, TogetherAI): valid credentials for the chosen provider.
 
 
 # Quick start
@@ -61,26 +64,23 @@ Run the following command in your project directory:
 dr component add https://github.com/datarobot-community/af-component-llm .
 ```
 
-Alternatively, you can use `uvx` copier:
+If you need additional control, you can run this to use copier directly:
 
 ```bash
 uvx copier copy datarobot-community/af-component-llm .
 ```
 
-The interactive prompt will ask for:
-- A Python-friendly name for this LLM instance (e.g. `llm` → generates `liballm.py`)
-- The path to your base component answers file
-- The LLM configuration strategy (see [Configuration strategies](#configuration-strategies))
-- Provider-specific credentials or identifiers depending on the strategy chosen
+The interactive prompt asks for:
 
-To update an existing LLM component instance after a new version is released:
-
-```bash
-uvx copier update -a .datarobot/answers/llm-{llm_name}.yml -A
-```
+- A Python-friendly name for this LLM instance (for example, `llm` generates `liballm.py`).
+- The path to your base component answers file.
+- The LLM configuration strategy (see [Configuration strategies](#configuration-strategies)).
+- Provider-specific credentials or identifiers depending on the strategy chosen.
 
 
 # Component dependencies
+
+This component has one required dependency that must be applied to your project before adding the LLM component.
 
 ## Required
 
@@ -93,7 +93,7 @@ The following components must be applied to the project **before** this componen
 
 # Configuration strategies
 
-The component prompts you to choose one of five LLM configuration strategies during setup. Each generates a different infrastructure module:
+During setup, the interactive prompt asks you to choose one of five LLM configuration strategies. Each generates a different Pulumi infrastructure module tailored to the selected approach.
 
 | Strategy | Description |
 |----------|-------------|
@@ -107,6 +107,8 @@ Each strategy exports a Pulumi stack output with the deployment ID and model ide
 
 
 # Local development
+
+The following tasks are available for working on the component itself. Run them from the repository root after cloning.
 
 Install development dependencies (renders the Copier template into `.rendered/` and syncs the project):
 
@@ -141,49 +143,72 @@ task validate-windows-compatibility
 The rendered template lands in `.rendered/infra/`. You can inspect or run the generated Pulumi code there before contributing changes upstream. The `render-template` task (called automatically by `install-dev`) drives this using Copier defaults.
 
 
+# Updating
+
+All components should be regularly updated to pick up bug fixes, new features, and compatibility with the latest DataRobot App Framework.
+
+For automatic updates to the latest version, run the following command in your project directory:
+
+```bash
+dr component update .datarobot/answers/llm-LLM_NAME.yml
+```
+
+If you need more fine-grained control and prefer using copier directly, run this to have more control over the process:
+
+```bash
+uvx copier update -a .datarobot/answers/llm-LLM_NAME.yml -A
+```
+
+
 # Troubleshooting
 
+The following are common issues you may encounter when setting up or using this component, along with their solutions.
+
 **`ScannerError` when running the generator tool**
-A YAML syntax error in `copier-module.yaml` (for example, a double closing quote on `short_description`) will prevent the generator from running. Open the file and verify all quoted strings are properly terminated.
+A YAML syntax error in `copier-module.yaml` (for example, a double closing quote on `short_description`) prevents the generator from running. Open the file and verify all quoted strings are properly terminated.
 
 **"Model not found in LLM Gateway catalog"**
-Check that `{LLM_APP_NAME}_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-4o-mini-2024-07-18`) and that the model is active. Call `verify_llm_gateway_model_availability()` from the library module to list available models.
+Check that `LLM_NAME_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-4o-mini-2024-07-18`) and that the model is active. Call `verify_llm_gateway_model_availability()` from the library module to list available models.
 
 **"Feature flags required but not enabled"**
 Some configuration strategies require DataRobot platform feature flags (`MLOPS`, `TEXT_GENERATION`, and others). Contact DataRobot support to have the required flags enabled on your account.
 
 **"Credential validation failed" for external providers**
-Verify that the environment variables for your chosen provider are set correctly. The required variables differ per provider — see the [Provider credentials](#configuration-strategies) table. The `ProviderCredential` class in the generated library module lists the exact variable names.
+Verify that the environment variables for your chosen provider are set correctly. The required variables differ per provider. The `ProviderCredential` class in the generated library module lists the exact variable names.
 
 **Windows file path issues during template rendering**
 Run `task validate-windows-compatibility` to scan for template file names containing characters illegal on Windows (`< > : " | ? *`). The Jinja variable substitution in file names is designed to avoid these, but verify after adding new template files.
 
 **Copier update conflicts**
-If `uvx copier update` reports conflicts, review the diff carefully. Copier stores the original answers in `.datarobot/answers/llm-{llm_name}.yml`; you can re-run the update with `-A` to skip all conflict prompts and accept the latest template version.
+If `uvx copier update` reports conflicts, review the diff carefully. Copier stores the original answers in `.datarobot/answers/llm-LLM_NAME.yml`; you can re-run the update with `-A` to skip all conflict prompts and accept the latest template version.
 
 If you encounter issues not listed here, [open a GitHub issue](https://github.com/datarobot-community/af-component-llm/issues) or [contact DataRobot support](https://docs.datarobot.com/en/docs/get-started/troubleshooting/general-help.html).
 
 
 # Next steps and cross-links
 
-- [App Framework documentation](https://af.datarobot.com) — full reference for building and deploying App Framework projects
-- [af-component-base](https://github.com/datarobot-community/af-component-base) — required prerequisite component
-- [DataRobot CLI reference](https://cli.datarobot.com) — `dr component add`, `dr deploy`, and other commands
-- [DataRobot LLM Gateway docs](https://docs.datarobot.com/en/docs/agentic-ai/agentic-develop/index.html) — model catalog, governance, and monitoring
-- [LiteLLM documentation](https://docs.litellm.ai) — the multi-provider LLM library used by the generated infrastructure module
-- [Pulumi DataRobot provider](https://www.pulumi.com/registry/packages/datarobot/) — Pulumi resource reference for DataRobot
+After applying the component, use these resources to configure LLM access and continue building your application.
+
+- [App Framework documentation](https://af.datarobot.com)&mdash;full reference for building and deploying App Framework projects.
+- [af-component-base](https://github.com/datarobot-community/af-component-base)&mdash;required prerequisite component.
+- [DataRobot CLI reference](https://cli.datarobot.com)&mdash;`dr component add`, `dr deploy`, and other commands.
+- [DataRobot LLM Gateway docs](https://docs.datarobot.com/en/docs/agentic-ai/agentic-develop/index.html)&mdash;model catalog, governance, and monitoring.
+- [LiteLLM documentation](https://docs.litellm.ai)&mdash;the multi-provider LLM library used by the generated infrastructure module.
+- [Pulumi DataRobot provider](https://www.pulumi.com/registry/packages/datarobot/)&mdash;Pulumi resource reference for DataRobot.
 
 
 # Contributing, changelog, support, and legal
 
-**Contributing**: Bug reports and pull requests are welcome. Please open an issue first to discuss significant changes. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution guide and our [Code of Conduct](CODE_OF_CONDUCT.md).
+This section covers how to contribute, where to find changelogs, and how to get help or report security issues.
 
-**Changelog and versioning**: Releases are tagged on the [GitHub repository](https://github.com/datarobot-community/af-component-llm/tags). The project follows semantic versioning; breaking changes are noted in release notes.
+**Contributing**&mdash;bug reports and pull requests are welcome. Open an issue first to discuss significant changes. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution guide and the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-**Getting help**: Open an issue on [GitHub](https://github.com/datarobot-community/af-component-llm/issues) or [contact DataRobot support](https://docs.datarobot.com/en/docs/get-started/troubleshooting/general-help.html).
+**Changelog and versioning**&mdash;releases are tagged on the [GitHub repository](https://github.com/datarobot-community/af-component-llm/tags). The project follows semantic versioning; breaking changes are noted in release notes.
 
-**Security**: Review [SECURITY.md](.github/SECURITY.md) for the security policy and responsible disclosure process.
+**Getting help**&mdash;open an issue on [GitHub](https://github.com/datarobot-community/af-component-llm/issues) or [contact DataRobot support](https://docs.datarobot.com/en/docs/get-started/troubleshooting/general-help.html).
 
-**License**: Apache 2.0. See [LICENSE](/LICENSE).
+**Security**&mdash;review [SECURITY.md](.github/SECURITY.md) for the security policy and responsible disclosure process.
+
+**License**&mdash;Apache 2.0. See [LICENSE](/LICENSE).
 
 ---
