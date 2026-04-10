@@ -1,0 +1,109 @@
+# Copyright 2026 DataRobot, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""
+Choose this option when you have an OpenAI-compatible endpoint
+(e.g. Ollama, vLLM, a custom inference server). Set OPENAI_BASE_URL to your endpoint's
+base URL, OPENAI_API_KEY to your API key, and {{llm_app_name|upper}}_DEFAULT_MODEL
+to the model name your endpoint expects (e.g., openai/llama3, openai/gpt-4o).
+
+This configuration does not create a DataRobot LLM Blueprint or intermediate proxy
+deployment. Instead, OPENAI_BASE_URL and OPENAI_API_KEY are injected directly into
+the agent's runtime environment so the agent calls your endpoint directly via LiteLLM.
+"""
+
+import os
+
+from datarobot_pulumi_utils.pulumi import export
+import pulumi
+import pulumi_datarobot as datarobot
+
+from .lib{{ llm_app_name|lower|replace('-','_')}} import (
+    validate_feature_flags,
+    verify_llm,
+)
+
+__all__ = [
+    "app_runtime_parameters",
+    "custom_model_runtime_parameters",
+    "default_model",
+    "{{llm_app_name}}_application_name",
+]
+
+REQUIRED_FEATURE_FLAGS = {
+    "ENABLE_MLOPS": True,
+    "ENABLE_CUSTOM_INFERENCE_MODEL": True,
+    "ENABLE_PUBLIC_NETWORK_ACCESS_FOR_ALL_CUSTOM_MODELS": True,
+    "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
+}
+
+{{llm_app_name}}_application_name: str = "{{llm_app_name}}"
+
+_raw_model: str = os.environ.get(
+    "{{llm_app_name|upper}}_DEFAULT_MODEL",
+    "gpt-4o",
+)
+# Ensure the openai/ prefix is present for LiteLLM calls.
+default_model: str = (
+    _raw_model if _raw_model.startswith("openai/") else f"openai/{_raw_model}"
+)
+
+# Verify everything is configured properly for this configuration option.
+validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+
+# Verify your OpenAI-compatible endpoint is reachable.
+# LiteLLM picks up OPENAI_BASE_URL and OPENAI_API_KEY from the environment.
+# See https://docs.litellm.ai/docs/providers/openai_compatible for details.
+verify_llm(default_model)
+
+openai_api_key_credential = datarobot.ApiTokenCredential(
+    resource_name=f"{pulumi.get_project()} OPENAI_API_KEY [{{llm_app_name}}]",
+    api_token=os.environ.get("OPENAI_API_KEY", ""),
+)
+
+app_runtime_parameters = [
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key="OPENAI_BASE_URL",
+        type="string",
+        value=os.environ.get("OPENAI_BASE_URL", ""),
+    ),
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key="OPENAI_API_KEY",
+        type="credential",
+        value=openai_api_key_credential.id,
+    ),
+    datarobot.ApplicationSourceRuntimeParameterValueArgs(
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
+        type="string",
+        value=default_model,
+    ),
+]
+custom_model_runtime_parameters = [
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="OPENAI_BASE_URL",
+        type="string",
+        value=os.environ.get("OPENAI_BASE_URL", ""),
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="OPENAI_API_KEY",
+        type="credential",
+        value=openai_api_key_credential.id,
+    ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
+        type="string",
+        value=default_model,
+    ),
+]
+export("OPENAI_BASE_URL", os.environ.get("OPENAI_BASE_URL", ""))
+export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)

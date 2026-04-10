@@ -1,8 +1,8 @@
 ---
 root:
-  - env: INFRA_ENABLE_LLM
+  - key: llm_integration
+    optional: false
     type: string
-    default: "gateway_direct.py"
     help: >
       Choose your LLM integration.
 
@@ -13,7 +13,9 @@ root:
 
       - If you want to use your LLM provider credentials instead of the LLM gateway (e.g. Azure OpenAI,
 
-      AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), select "External LLM".
+      AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), or an OpenAI-compatible endpoint
+
+      (e.g. Ollama, vLLM, a custom server), select "External LLM".
 
       - If you need full DataRobot governance and monitoring with LLM Blueprint support,
 
@@ -25,28 +27,35 @@ root:
 
     options:
       - name: "LLM Gateway"
-        value: "gateway_direct.py"
         requires: llm_gateway
       - name: "DataRobot Deployed LLM"
-        value: "deployed_llm.py"
         requires: deployed_llm
       - name: "External LLM"
-        value: "blueprint_with_external_llm.py"
         requires: external_llm
       - name: "LLM Gateway with External Model"
-        value: "blueprint_with_llm_gateway.py"
-        requires: llm_gateway
+        requires: blueprint_with_llm_gateway
       - name: "Registered Model with an LLM Blueprint"
-        value: "registered_model.py"
         requires: registered_model
 
 llm_gateway:
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "gateway_direct.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: gateway_direct.py)."
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: llmgw_catalog
     optional: false
     help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
 
 deployed_llm:
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "deployed_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: deployed_llm.py)."
   - env: {{llm_app_name|upper}}_DEPLOYMENT_ID
     type: string
     optional: false
@@ -56,7 +65,25 @@ deployed_llm:
     default: "0"
     hidden: true
 
+blueprint_with_llm_gateway:
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_llm_gateway.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_llm_gateway.py)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: llmgw_catalog
+    optional: false
+    help: "Choose an LLM from the DataRobot LLM Gateway catalog to use for your LLM Blueprint."
+
 registered_model:
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "registered_model.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: registered_model.py)."
   - env: TEXTGEN_REGISTERED_MODEL_ID
     type: string
     optional: false
@@ -68,11 +95,6 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    default: "azure-openai-gpt-5-mini"
-    optional: true
-    help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
   - key: external_llm_provider
     optional: false
     options:
@@ -88,11 +110,14 @@ external_llm:
         requires: cohere
       - name: "TogetherAI"
         requires: togetherai
+      - name: "OpenAI Compatible Endpoint"
+        requires: openai_compat
     help: >
       Choose which external LLM provider to use.
       
       
-      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
+      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI,
+      or an OpenAI-compatible endpoint.
 
 azure_openai:
   - env: OPENAI_API_KEY
@@ -111,6 +136,18 @@ azure_openai:
     type: string
     optional: false
     help: "Enter the OpenAI API version (e.g., 2024-08-01-preview)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Azure OpenAI (e.g., azure/gpt-5-mini-2025-08-07).
+      It must be consistent with OPENAI_API_DEPLOYMENT_ID and the Azure model deployment.
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 bedrock:
   - env: AWS_ACCESS_KEY_ID
@@ -125,6 +162,18 @@ bedrock:
     type: string
     optional: false
     help: "Enter the AWS region name for Bedrock (e.g., us-east-1)."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Amazon Bedrock (e.g.,
+      bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0).
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 vertexai:
   - env: VERTEXAI_APPLICATION_CREDENTIALS
@@ -135,22 +184,87 @@ vertexai:
     type: string
     optional: false
     help: "Enter the Google service account email."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Vertex AI (e.g., vertex_ai/gemini-1.5-pro).
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 anthropic:
   - env: ANTHROPIC_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Anthropic."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Anthropic (e.g., anthropic/claude-3-5-sonnet-20240620).
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 cohere:
   - env: COHERE_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Cohere."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Cohere (e.g., cohere/command-r-plus).
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
 togetherai:
   - env: TOGETHERAI_API_KEY
     type: string
     optional: false
     help: "Enter the API key for TogetherAI."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the LiteLLM model string for Together AI (e.g., together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo).
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "blueprint_with_external_llm.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: blueprint_with_external_llm.py)."
 
+openai_compat:
+  - env: OPENAI_BASE_URL
+    type: string
+    optional: false
+    help: "Enter the base URL of your OpenAI-compatible endpoint (e.g., http://localhost:11434/v1 for Ollama)."
+  - env: OPENAI_API_KEY
+    type: string
+    optional: false
+    help: "Enter the API key for your OpenAI-compatible endpoint."
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: >
+      Enter the model name your endpoint expects (e.g., llama3, gpt-4o, mistral).
+      An openai/ prefix is added automatically if not present.
+  - env: INFRA_ENABLE_LLM
+    type: string
+    default: "openai_compat.py"
+    optional: false
+    hidden: true
+    help: "Active infra LLM config file (default: openai_compat.py)."
