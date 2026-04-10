@@ -1,0 +1,6 @@
+module: af-component-llm
+short_description: "The LLM inference component. Deploys and/or configures LLM models or uses the DataRobot LLM Gateway for other components to leverage"
+repeatable: true
+depends_on:
+  base:
+    url: https://github.com/datarobot-community/af-component-base
