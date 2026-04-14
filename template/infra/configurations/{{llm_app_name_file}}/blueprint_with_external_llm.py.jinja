@@ -184,7 +184,7 @@ custom_model_runtime_parameters = [
 
 datarobot_url = os.getenv(
     "DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2"
-).removesuffix("/api/v2")
+).rstrip("/").removesuffix("/api/v2")
 rag_playground_url = pulumi.Output.format(
     "{0}/usecases/{1}/playgrounds/{2}/comparison/chats",
     datarobot_url,
