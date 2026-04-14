@@ -33,7 +33,7 @@ root:
       - name: "External LLM"
         value: "blueprint_with_external_llm.py"
         requires: external_llm
-      - name: "LLM Gateway with External Model"
+      - name: "LLM Blueprint with LLM Gateway"
         value: "blueprint_with_llm_gateway.py"
         requires: llm_gateway
       - name: "Registered Model with an LLM Blueprint"
@@ -90,8 +90,8 @@ external_llm:
         requires: togetherai
     help: >
       Choose which external LLM provider to use.
-      
-      
+
+
       Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 azure_openai:

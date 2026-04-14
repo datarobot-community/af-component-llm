@@ -164,7 +164,7 @@ app_runtime_parameters = [
         value=default_model,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_default_llm_friendly_name",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME",
         type="string",
         value=default_llm_friendly_name,
     ),
@@ -181,7 +181,25 @@ custom_model_runtime_parameters = [
         value=default_model,
     ),
 ]
+
+datarobot_url = os.getenv(
+    "DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2"
+).removesuffix("/api/v2")
+rag_playground_url = pulumi.Output.format(
+    "{0}/usecases/{1}/playgrounds/{2}/comparison/chats",
+    datarobot_url,
+    use_case.id,
+    playground.id,
+)
+deployment_url = pulumi.Output.format(
+    "{0}/console-nextgen/deployments/{1}/overview",
+    datarobot_url,
+    llm_deployment.id,
+)
+
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
+pulumi.export("Deployment Console " + {{llm_app_name}}_resource_name, deployment_url)
 export("{{llm_app_name|upper}}_DEPLOYMENT_ID", llm_deployment.id)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
-export("{{llm_app_name|upper}}_default_llm_friendly_name", default_llm_friendly_name)
+export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", default_llm_friendly_name)
+pulumi.export("RAG Playground URL " + {{llm_app_name}}_resource_name, rag_playground_url)
