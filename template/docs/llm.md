@@ -7,7 +7,7 @@ During project setup (`dr start` or `dr dotenv setup`), the CLI prompts you to c
 | Option | Best for | Deploys resources? | Requires credentials? |
 |---|---|---|---|
 | [LLM Gateway](#llm-gateway) | Getting started quickly | No | No |
-| [DataRobot Deployed LLM](#datarobot-deployed-llm) | Using an existing deployment | No (references existing) | No |
+| [DataRobot Deployed LLM](#datarobot-deployed-llm) | Using an existing deployment | Yes (Playground only) | No |
 | [External LLM](#external-llm) | Bringing your own provider (Azure, Bedrock, etc.) | Yes | Yes |
 | [LLM Blueprint with LLM Gateway](#llm-blueprint-with-llm-gateway) | Most production controls, multiple LLMs via one deployment | Yes | No |
 | [LLM from a Registered Model](#llm-from-a-registered-model) | Deploying a registered model (e.g. NVIDIA NIM) | Yes | No |
@@ -102,7 +102,7 @@ Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Ver
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. The CLI default is `azure-openai-gpt-5-mini`; the value shown here is the Python fallback. |
 | `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground. |
 | `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI. |
 
@@ -293,7 +293,7 @@ All options that deploy resources share these behaviors:
 
 - **Prediction environment** -- if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set, the component uses that existing environment; otherwise, it creates a new serverless environment.
 - **Scaling** -- deployments default to `min_computes=0` and `max_computes=2`.
-- **Data collection** -- all deployments enable prediction data collection.
+- **Data collection** -- blueprint, gateway, and registered model deployments enable prediction data collection.
 - **Association IDs** -- deployments use `association_id` for tracking predictions.
 
 ### Required feature flags
@@ -317,8 +317,8 @@ In the tables above, `<LLM>` is a placeholder for your LLM app name in uppercase
 
 ## Further reading
 
-- [Playground overview](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/playground-overview.html) -- what a Playground is and how LLM blueprints fit in.
-- [Build LLM blueprints](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/build-llm-blueprints.html) -- LLM blueprint settings (base LLM, prompting, vector database).
-- [Deploy an LLM](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/deploy-llm.html) -- deploying an LLM blueprint for production use.
+- [Playground overview](https://docs.datarobot.com/en/docs/agentic-ai/playground-tools/playground-overview.html) -- what a Playground is and how LLM blueprints fit in.
+- [Build LLM blueprints](https://docs.datarobot.com/en/docs/agentic-ai/playground-tools/build-llm-blueprints.html) -- LLM blueprint settings (base LLM, prompting, vector database).
+- [Deploy an LLM](https://docs.datarobot.com/en/docs/agentic-ai/playground-tools/deploy-llm.html) -- deploying an LLM blueprint for production use.
 - [LLM gateway model configuration](https://docs.datarobot.com/en/docs/reference/gen-ai-ref/llm-gateway-config.html) -- admin guide to provisioning provider credentials for the LLM gateway.
 - [LiteLLM providers](https://docs.litellm.ai/docs/providers) -- reference for the model-string prefixes used by the `verify_llm` check.
