@@ -55,9 +55,7 @@ __all__ = [
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
-default_model: str = os.environ.get(
-    "{{llm_app_name|upper}}_DEFAULT_MODEL", "azure-openai-gpt-5-mini"
-)
+default_model: str = os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "azure-openai-gpt-5-mini")
 default_llm_id: str = os.environ.get(
     "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
     "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
