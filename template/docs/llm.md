@@ -1,6 +1,6 @@
 # LLM component
 
-The LLM component provides the language model integration for your application. It supports multiple ways to connect an LLM, from zero-configuration gateway access to fully governed deployments with external provider credentials.
+The LLM component provides the language model integration for your application. It supports multiple ways to connect an LLM.
 
 During project setup (`dr start` or `dr dotenv setup`), the CLI prompts you to choose one of five LLM integration options. Each option creates different DataRobot resources and requires different configuration.
 
@@ -9,16 +9,16 @@ During project setup (`dr start` or `dr dotenv setup`), the CLI prompts you to c
 | [LLM Gateway](#llm-gateway) | Getting started quickly | No | No |
 | [DataRobot Deployed LLM](#datarobot-deployed-llm) | Using an existing deployment | No (references existing) | No |
 | [External LLM](#external-llm) | Bringing your own provider (Azure, Bedrock, etc.) | Yes | Yes |
-| [LLM Blueprint with LLM Gateway](#llm-blueprint-with-llm-gateway) | Production use with full governance | Yes | No |
+| [LLM Blueprint with LLM Gateway](#llm-blueprint-with-llm-gateway) | Most production controls, multiple LLMs via one deployment | Yes | No |
 | [LLM from a Registered Model](#llm-from-a-registered-model) | Deploying a registered model (e.g. NVIDIA NIM) | Yes | No |
 
 ## LLM Gateway
 
-The simplest option. Uses DataRobot's managed LLM Gateway directly with no custom model deployment. Good for prototyping and getting started.
+The simplest setup. Uses DataRobot's managed LLM Gateway directly with no custom model deployment.
 
 ### Resources created
 
-This option deploys no DataRobot resources. The application calls the LLM Gateway API directly at runtime.
+This option deploys no DataRobot resources.
 
 ### Environment variables
 
@@ -47,7 +47,7 @@ for model in data["data"]:
 
 ## DataRobot Deployed LLM
 
-Use this option when you already have a custom model deployed as an LLM in DataRobot and have the deployment ID. The component pulls the existing deployment into a playground and use case without creating new infrastructure.
+Use this option when you already have a custom model deployed LLM and a deployment ID. The component pulls it into the playground and use case.
 
 ### Resources created
 
@@ -55,7 +55,7 @@ Use this option when you already have a custom model deployed as an LLM in DataR
 |---|---|---|
 | LLM Playground | `datarobot.Playground` | Playground linked to the use case. |
 
-The component references the existing deployment and its prediction environment rather than creating new ones.
+The component references the existing deployment and its prediction environment.
 
 ### Environment variables
 
@@ -85,7 +85,7 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 ## External LLM
 
-Use your own LLM provider credentials (Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI) with full DataRobot governance, monitoring, and guard model support.
+Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Vertex, Cohere, or TogetherAI. You can monitor and scale your LLM with the added benefits of the DataRobot platform such as governance, guard models, controlled API access, and monitoring.
 
 ### Resources created
 
@@ -102,7 +102,7 @@ Use your own LLM provider credentials (Azure OpenAI, AWS Bedrock, GCP VertexAI, 
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `azure-openai-gpt-5-mini` | External LLM model name. |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. |
 | `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground. |
 | `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI. |
 
@@ -151,7 +151,7 @@ You must also configure credentials for your chosen provider:
 |---|---|
 | `TOGETHERAI_API_KEY` | API key. |
 
-**Note:** The stock `blueprint_with_external_llm.py` template calls `verify_llm(f"azure/{os.getenv('OPENAI_API_DEPLOYMENT_ID')}")`, which is hardcoded to Azure OpenAI. For non-Azure providers, edit that line to the matching LiteLLM prefix&mdash;see the [LiteLLM providers reference](https://docs.litellm.ai/docs/providers).
+**Note:** The default `verify_llm` call in `blueprint_with_external_llm.py` assumes Azure OpenAI. For other providers, update the string passed to `verify_llm`. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for details on what string to pass.
 
 ### Runtime parameters exported
 
@@ -173,7 +173,7 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 ## LLM Blueprint with LLM Gateway
 
-The most production-ready option. Combines a full LLM Blueprint deployment with the DataRobot LLM Gateway, giving you governance, monitoring, guard models, and the ability to swap models through the gateway catalog without redeploying.
+The most flexible option with the most production controls. Uses the LLM Blueprint and LLM Gateway options to enable multiple LLMs through a single deployment with all of the DataRobot governance and monitoring.
 
 ### Resources created
 
@@ -213,12 +213,12 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 ## LLM from a Registered Model
 
-Use this option when you have an existing registered model (not yet deployed) that you want to wrap in an LLM Blueprint and deploy. This is the path for NVIDIA NIM models: pick a model from the NVIDIA gallery, specify the registered model ID, and this option deploys it, creates an LLM Blueprint and RAG Playground around it, then connects it to the application.
+Use this option when you have an existing registered model (not yet deployed) that you want to deploy with an LLM Blueprint. This is the path for NVIDIA NIM models: pick a model from the NVIDIA gallery, specify the registered model ID, and this option deploys it, creates an LLM Blueprint around it, then connects it to the application.
 
 This option creates two deployments:
 
-1. **Proxy deployment**&mdash;deploys the registered model so it can be validated.
-2. **Blueprint deployment**&mdash;creates an LLM Blueprint from the validated model, builds a new custom model from that blueprint, and deploys it with full monitoring.
+1. **Proxy deployment** -- deploys the registered model so it can be validated.
+2. **Blueprint deployment** -- creates an LLM Blueprint from the validated model, builds a new custom model from that blueprint, and deploys it with full monitoring.
 
 ### Resources created
 
@@ -239,7 +239,7 @@ This option creates two deployments:
 |---|---|---|---|
 | `TEXTGEN_REGISTERED_MODEL_ID` | Yes | -- | ID of the registered model. |
 | `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier. |
-| `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. |
+| `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. Increase for models that require GPU allocations. |
 
 ### Runtime parameters exported
 
@@ -266,7 +266,7 @@ Run `dr start` or `dr dotenv setup` and select the desired option from the inter
 ### Using the symlink
 
 ```sh
-ln -sf ../configurations/CONFIG_FILE infra/infra/llm.py
+ln -sf ../configurations/<llm_app_name>/CONFIG_FILE infra/infra/<llm_app_name>.py
 ```
 
 Available configuration files:
@@ -291,10 +291,10 @@ INFRA_ENABLE_LLM=gateway_direct.py
 
 All options that deploy resources share these behaviors:
 
-- **Prediction environment**&mdash;if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set, the component uses that existing environment; otherwise, it creates a new serverless environment.
-- **Scaling**&mdash;deployments default to `min_computes=0` and `max_computes=2`.
-- **Data collection**&mdash;all deployments enable prediction data collection.
-- **Association IDs**&mdash;deployments use `association_id` for tracking predictions.
+- **Prediction environment** -- if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set, the component uses that existing environment; otherwise, it creates a new serverless environment.
+- **Scaling** -- deployments default to `min_computes=0` and `max_computes=2`.
+- **Data collection** -- all deployments enable prediction data collection.
+- **Association IDs** -- deployments use `association_id` for tracking predictions.
 
 ### Required feature flags
 
@@ -305,7 +305,7 @@ All options require these DataRobot feature flags to be enabled:
 - `ENABLE_PUBLIC_NETWORK_ACCESS_FOR_ALL_CUSTOM_MODELS`
 - `ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE`
 
-LLM Gateway (direct) additionally requires:
+LLM Gateway additionally requires:
 
 - `ENABLE_MLOPS_RESOURCE_REQUEST_BUNDLES`
 
@@ -317,8 +317,8 @@ In the tables above, `<LLM>` is a placeholder for your LLM app name in uppercase
 
 ## Further reading
 
-- [Playground overview](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/playground-overview.html)&mdash;what a Playground is and how LLM blueprints fit in.
-- [Build LLM blueprints](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/build-llm-blueprints.html)&mdash;LLM blueprint settings (base LLM, prompting, vector database).
-- [Deploy an LLM](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/deploy-llm.html)&mdash;deploying an LLM blueprint for production use.
-- [LLM gateway model configuration](https://docs.datarobot.com/en/docs/reference/gen-ai-ref/llm-gateway-config.html)&mdash;admin guide to provisioning provider credentials for the LLM gateway.
-- [LiteLLM providers](https://docs.litellm.ai/docs/providers)&mdash;reference for the model-string prefixes used by the `verify_llm` check.
+- [Playground overview](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/playground-overview.html) -- what a Playground is and how LLM blueprints fit in.
+- [Build LLM blueprints](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/build-llm-blueprints.html) -- LLM blueprint settings (base LLM, prompting, vector database).
+- [Deploy an LLM](https://docs.datarobot.com/en/docs/gen-ai/playground-tools/deploy-llm.html) -- deploying an LLM blueprint for production use.
+- [LLM gateway model configuration](https://docs.datarobot.com/en/docs/reference/gen-ai-ref/llm-gateway-config.html) -- admin guide to provisioning provider credentials for the LLM gateway.
+- [LiteLLM providers](https://docs.litellm.ai/docs/providers) -- reference for the model-string prefixes used by the `verify_llm` check.
