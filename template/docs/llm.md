@@ -28,22 +28,9 @@ This option deploys no DataRobot resources.
 
 To list available models:
 
-```python
-import datarobot
-dr_client = datarobot.Client()
-response = dr_client.get("genai/llmgw/catalog/")
-data = response.json()
-for model in data["data"]:
-    if model["isActive"]:
-        print(model["model"])
+```sh
+dr get-llms
 ```
-
-### Runtime parameters exported
-
-| Parameter | Value |
-|---|---|
-| `USE_DATAROBOT_LLM_GATEWAY` | `1` |
-| `<LLM>_DEFAULT_MODEL` | Selected model ID |
 
 ## DataRobot Deployed LLM
 
@@ -65,15 +52,6 @@ The component references the existing deployment and its prediction environment.
 | `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier |
 
 **Note:** The deployment ID variable was formerly named `TEXTGEN_DEPLOYMENT_ID`. Use `<LLM>_DEPLOYMENT_ID` in current templates.
-
-### Runtime parameters exported
-
-| Parameter | Value |
-|---|---|
-| `<LLM>_DEPLOYMENT_ID` | The deployment ID |
-| `<LLM>_DEFAULT_MODEL` | Model identifier |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Deployment label |
-| `USE_DATAROBOT_LLM_GATEWAY` | `0` |
 
 ### Stack outputs
 
@@ -102,7 +80,7 @@ Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Ver
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. The CLI default is `azure-openai-gpt-5-mini`; the value shown here is the Python fallback |
+| `<LLM>_DEFAULT_MODEL` | No | `azure-openai-gpt-5-mini` | External LLM model name |
 | `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
 | `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
 
@@ -153,14 +131,6 @@ You must also configure credentials for your chosen provider:
 
 **Note:** The default `verify_llm` call in `blueprint_with_external_llm.py` assumes Azure OpenAI. For other providers, update the string passed to `verify_llm`. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for details on what string to pass.
 
-### Runtime parameters exported
-
-| Parameter | Value |
-|---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
-| `<LLM>_DEFAULT_MODEL` | Model identifier |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Friendly name |
-
 ### Stack outputs
 
 Surfaced by `task infra:info` or `pulumi stack output`:
@@ -192,14 +162,6 @@ The most flexible option with the most production controls. Uses the LLM Bluepri
 |---|---|---|---|
 | `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog |
 | `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
-
-### Runtime parameters exported
-
-| Parameter | Value |
-|---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
-| `USE_DATAROBOT_LLM_GATEWAY` | `1` |
-| `<LLM>_DEFAULT_MODEL` | Selected model ID |
 
 ### Stack outputs
 
@@ -241,14 +203,6 @@ This option creates two deployments:
 | `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier |
 | `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. Increase for models that require GPU allocations |
 
-### Runtime parameters exported
-
-| Parameter | Value |
-|---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
-| `<LLM>_DEFAULT_MODEL` | Model identifier |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Registered model name |
-
 ### Stack outputs
 
 Surfaced by `task infra:info` or `pulumi stack output`:
@@ -281,11 +235,50 @@ Available configuration files:
 
 ### Using the environment variable
 
-Set `INFRA_ENABLE_LLM` in your `.env` file:
+Set `INFRA_ENABLE_LLM` in your `.env` file. Choose from the available options in the `infra/configurations/<llm_app_name>` folder.
+
+#### LLM Gateway (default)
 
 ```sh
 INFRA_ENABLE_LLM=gateway_direct.py
 ```
+
+#### DataRobot Deployed LLM
+
+```sh
+LLM_DEPLOYMENT_ID=<your_deployment_id>
+INFRA_ENABLE_LLM=deployed_llm.py
+```
+
+When you select DataRobot Deployed LLM during `dr start` (or `dr dotenv setup`), the template sets `USE_DATAROBOT_LLM_GATEWAY=0` automatically so the agent calls your deployment directly instead of routing through the LLM Gateway. You do not need to set `USE_DATAROBOT_LLM_GATEWAY` manually for this option.
+
+#### External LLM (Azure OpenAI example)
+
+```sh
+INFRA_ENABLE_LLM=blueprint_with_external_llm.py
+LLM_DEFAULT_MODEL="azure/gpt-5-mini-2025-08-07"
+OPENAI_API_VERSION='2024-08-01-preview'
+OPENAI_API_BASE='https://<your_custom_endpoint>.openai.azure.com'
+OPENAI_API_DEPLOYMENT_ID='<your deployment_id>'
+OPENAI_API_KEY='<your_api_key>'
+```
+
+#### LLM Blueprint with LLM Gateway
+
+```sh
+INFRA_ENABLE_LLM=blueprint_with_llm_gateway.py
+```
+
+#### LLM from a Registered Model
+
+```sh
+TEXTGEN_REGISTERED_MODEL_ID=<your_registered_model_id>
+INFRA_ENABLE_LLM=registered_model.py
+```
+
+### Editing the configuration directly
+
+In addition to the `.env` file changes, you can also edit the respective configuration file to make additional changes, such as the default LLM, temperature, top_p, etc.
 
 ## Common configuration
 
