@@ -192,6 +192,7 @@ custom_model_runtime_parameters = [
         value=default_model,
     ),
 ]
+# TODO(APP-5859): Move datarobot_url to af-component-base infra/__init__.py
 datarobot_url = (
     os.getenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2")
     .rstrip("/")
