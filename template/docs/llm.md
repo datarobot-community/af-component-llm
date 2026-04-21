@@ -24,7 +24,7 @@ This option deploys no DataRobot resources.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog. |
+| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog |
 
 To list available models:
 
@@ -42,8 +42,8 @@ for model in data["data"]:
 
 | Parameter | Value |
 |---|---|
-| `USE_DATAROBOT_LLM_GATEWAY` | `1`. |
-| `<LLM>_DEFAULT_MODEL` | Selected model ID. |
+| `USE_DATAROBOT_LLM_GATEWAY` | `1` |
+| `<LLM>_DEFAULT_MODEL` | Selected model ID |
 
 ## DataRobot Deployed LLM
 
@@ -53,7 +53,7 @@ Use this option when you already have a custom model deployed LLM and a deployme
 
 | Resource | Type | Description |
 |---|---|---|
-| LLM Playground | `datarobot.Playground` | Playground linked to the use case. |
+| LLM Playground | `datarobot.Playground` | Playground linked to the use case |
 
 The component references the existing deployment and its prediction environment.
 
@@ -61,8 +61,8 @@ The component references the existing deployment and its prediction environment.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEPLOYMENT_ID` | Yes | -- | Deployment ID of the existing LLM (e.g. `6510c7b7c4f3f9407e24a849`). |
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier. |
+| `<LLM>_DEPLOYMENT_ID` | Yes | -- | Deployment ID of the existing LLM (e.g. `6510c7b7c4f3f9407e24a849`) |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier |
 
 **Note:** The deployment ID variable was formerly named `TEXTGEN_DEPLOYMENT_ID`. Use `<LLM>_DEPLOYMENT_ID` in current templates.
 
@@ -70,10 +70,10 @@ The component references the existing deployment and its prediction environment.
 
 | Parameter | Value |
 |---|---|
-| `<LLM>_DEPLOYMENT_ID` | The deployment ID. |
-| `<LLM>_DEFAULT_MODEL` | Model identifier. |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Deployment label. |
-| `USE_DATAROBOT_LLM_GATEWAY` | `0`. |
+| `<LLM>_DEPLOYMENT_ID` | The deployment ID |
+| `<LLM>_DEFAULT_MODEL` | Model identifier |
+| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Deployment label |
+| `USE_DATAROBOT_LLM_GATEWAY` | `0` |
 
 ### Stack outputs
 
@@ -81,7 +81,7 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 | Output | Description |
 |---|---|
-| `Deployment ID [LLM_APP_NAME]` | ID of the referenced deployment. |
+| `Deployment ID [LLM_APP_NAME]` | ID of the referenced deployment |
 
 ## External LLM
 
@@ -91,20 +91,20 @@ Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Ver
 
 | Resource | Type | Description |
 |---|---|---|
-| LLM Playground | `datarobot.Playground` | Playground linked to the use case. |
-| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint configured with the external LLM. |
-| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint. |
-| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set). |
-| Registered Model | `datarobot.RegisteredModel` | Registered model version for deployment. |
-| LLM Deployment | `datarobot.Deployment` | Serverless deployment with monitoring and data collection enabled. |
+| LLM Playground | `datarobot.Playground` | Playground linked to the use case |
+| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint configured with the external LLM |
+| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint |
+| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set) |
+| Registered Model | `datarobot.RegisteredModel` | Registered model version for deployment |
+| LLM Deployment | `datarobot.Deployment` | Serverless deployment with monitoring and data collection enabled |
 
 ### Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. The CLI default is `azure-openai-gpt-5-mini`; the value shown here is the Python fallback. |
-| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground. |
-| `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI. |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini-2025-08-07` | LLM model name passed to the agent at runtime. The CLI default is `azure-openai-gpt-5-mini`; the value shown here is the Python fallback |
+| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
+| `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
 
 You must also configure credentials for your chosen provider:
 
@@ -112,44 +112,44 @@ You must also configure credentials for your chosen provider:
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | API key. |
-| `OPENAI_API_BASE` | Base URL (e.g. `https://ENDPOINT.openai.azure.com`). |
-| `OPENAI_API_DEPLOYMENT_ID` | Deployment ID (e.g. `gpt-5-mini`). |
-| `OPENAI_API_VERSION` | API version (e.g. `2024-08-01-preview`). |
+| `OPENAI_API_KEY` | API key |
+| `OPENAI_API_BASE` | Base URL (e.g. `https://ENDPOINT.openai.azure.com`) |
+| `OPENAI_API_DEPLOYMENT_ID` | Deployment ID (e.g. `gpt-5-mini`) |
+| `OPENAI_API_VERSION` | API version (e.g. `2024-08-01-preview`) |
 
 #### AWS Bedrock
 
 | Variable | Description |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | AWS access key ID. |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret access key. |
-| `AWS_REGION_NAME` | AWS region (e.g. `us-east-1`). |
+| `AWS_ACCESS_KEY_ID` | AWS access key ID |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret access key |
+| `AWS_REGION_NAME` | AWS region (e.g. `us-east-1`) |
 
 #### Google VertexAI
 
 | Variable | Description |
 |---|---|
-| `VERTEXAI_APPLICATION_CREDENTIALS` | Path to credentials JSON file. |
-| `VERTEXAI_SERVICE_ACCOUNT` | Google service account email. |
-| `GOOGLE_REGION` | Optional. Region for Vertex AI calls; defaults to `us-west1`. |
+| `VERTEXAI_APPLICATION_CREDENTIALS` | Path to credentials JSON file |
+| `VERTEXAI_SERVICE_ACCOUNT` | Google service account email |
+| `GOOGLE_REGION` | Optional. Region for Vertex AI calls; defaults to `us-west1` |
 
 #### Anthropic
 
 | Variable | Description |
 |---|---|
-| `ANTHROPIC_API_KEY` | API key. |
+| `ANTHROPIC_API_KEY` | API key |
 
 #### Cohere
 
 | Variable | Description |
 |---|---|
-| `COHERE_API_KEY` | API key. |
+| `COHERE_API_KEY` | API key |
 
 #### TogetherAI
 
 | Variable | Description |
 |---|---|
-| `TOGETHERAI_API_KEY` | API key. |
+| `TOGETHERAI_API_KEY` | API key |
 
 **Note:** The default `verify_llm` call in `blueprint_with_external_llm.py` assumes Azure OpenAI. For other providers, update the string passed to `verify_llm`. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for details on what string to pass.
 
@@ -157,9 +157,9 @@ You must also configure credentials for your chosen provider:
 
 | Parameter | Value |
 |---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID. |
-| `<LLM>_DEFAULT_MODEL` | Model identifier. |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Friendly name. |
+| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
+| `<LLM>_DEFAULT_MODEL` | Model identifier |
+| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Friendly name |
 
 ### Stack outputs
 
@@ -167,9 +167,9 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 | Output | Description |
 |---|---|
-| `Deployment ID [LLM_APP_NAME]` | ID of the deployed LLM. |
-| `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page. |
-| `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat. |
+| `Deployment ID [LLM_APP_NAME]` | ID of the deployed LLM |
+| `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page |
+| `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat |
 
 ## LLM Blueprint with LLM Gateway
 
@@ -179,27 +179,27 @@ The most flexible option with the most production controls. Uses the LLM Bluepri
 
 | Resource | Type | Description |
 |---|---|---|
-| LLM Playground | `datarobot.Playground` | Playground linked to the use case. |
-| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint configured with the LLM Gateway model. |
-| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint. |
-| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set). |
-| Registered Model | `datarobot.RegisteredModel` | Registered model version for deployment. |
-| LLM Deployment | `datarobot.Deployment` | Serverless deployment with monitoring and data collection enabled. |
+| LLM Playground | `datarobot.Playground` | Playground linked to the use case |
+| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint configured with the LLM Gateway model |
+| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint |
+| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set) |
+| Registered Model | `datarobot.RegisteredModel` | Registered model version for deployment |
+| LLM Deployment | `datarobot.Deployment` | Serverless deployment with monitoring and data collection enabled |
 
 ### Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog. |
-| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground. |
+| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog |
+| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
 
 ### Runtime parameters exported
 
 | Parameter | Value |
 |---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID. |
-| `USE_DATAROBOT_LLM_GATEWAY` | `1`. |
-| `<LLM>_DEFAULT_MODEL` | Selected model ID. |
+| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
+| `USE_DATAROBOT_LLM_GATEWAY` | `1` |
+| `<LLM>_DEFAULT_MODEL` | Selected model ID |
 
 ### Stack outputs
 
@@ -207,9 +207,9 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 | Output | Description |
 |---|---|
-| `Deployment ID [LLM_APP_NAME]` | ID of the deployed LLM. |
-| `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page. |
-| `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat. |
+| `Deployment ID [LLM_APP_NAME]` | ID of the deployed LLM |
+| `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page |
+| `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat |
 
 ## LLM from a Registered Model
 
@@ -224,30 +224,30 @@ This option creates two deployments:
 
 | Resource | Type | Description |
 |---|---|---|
-| LLM Playground | `datarobot.Playground` | Playground linked to the use case. |
-| Proxy Deployment | `datarobot.Deployment` | Initial deployment of the registered model for validation. |
-| LLM Validation | `datarobot.CustomModelLlmValidation` | Validates the deployed model can serve as an LLM. |
-| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint created from the validated custom model LLM. |
-| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint. |
-| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set). |
-| Registered Model | `datarobot.RegisteredModel` | New registered model from the blueprint custom model. |
-| LLM Deployment | `datarobot.Deployment` | Final deployment with monitoring and data collection enabled. |
+| LLM Playground | `datarobot.Playground` | Playground linked to the use case |
+| Proxy Deployment | `datarobot.Deployment` | Initial deployment of the registered model for validation |
+| LLM Validation | `datarobot.CustomModelLlmValidation` | Validates the deployed model can serve as an LLM |
+| LLM Blueprint | `datarobot.LlmBlueprint` | Blueprint created from the validated custom model LLM |
+| LLM Custom Model | `datarobot.CustomModel` | Text generation custom model sourced from the blueprint |
+| Prediction Environment | `datarobot.PredictionEnvironment` | Serverless prediction environment (or existing if `DATAROBOT_DEFAULT_PREDICTION_ENVIRONMENT` is set) |
+| Registered Model | `datarobot.RegisteredModel` | New registered model from the blueprint custom model |
+| LLM Deployment | `datarobot.Deployment` | Final deployment with monitoring and data collection enabled |
 
 ### Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `TEXTGEN_REGISTERED_MODEL_ID` | Yes | -- | ID of the registered model. |
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier. |
-| `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. Increase for models that require GPU allocations. |
+| `TEXTGEN_REGISTERED_MODEL_ID` | Yes | -- | ID of the registered model |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model identifier |
+| `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. Increase for models that require GPU allocations |
 
 ### Runtime parameters exported
 
 | Parameter | Value |
 |---|---|
-| `<LLM>_DEPLOYMENT_ID` | Deployment ID. |
-| `<LLM>_DEFAULT_MODEL` | Model identifier. |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Registered model name. |
+| `<LLM>_DEPLOYMENT_ID` | Deployment ID |
+| `<LLM>_DEFAULT_MODEL` | Model identifier |
+| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Registered model name |
 
 ### Stack outputs
 
@@ -255,7 +255,7 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 | Output | Description |
 |---|---|
-| `Deployment ID [LLM_APP_NAME]` | ID of the proxy deployment created from the registered model. |
+| `Deployment ID [LLM_APP_NAME]` | ID of the proxy deployment created from the registered model |
 
 ## Switching between options
 
