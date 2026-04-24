@@ -25,7 +25,12 @@ dev = [
     "ruff>=0.3.0",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = ["--import-mode=importlib"]
+
 [tool.ty.src]
 exclude = [
     "configurations",
+    "tests",
 ]

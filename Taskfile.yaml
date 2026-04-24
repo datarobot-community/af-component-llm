@@ -10,6 +10,14 @@ tasks:
         - cd ./$RENDER_DIR/infra && uv run ruff format --check --diff .
         - cd ./$RENDER_DIR/infra && uv run ruff check --diff .
         - cd ./$RENDER_DIR/infra && uv tool run ty@0.0.1a34 check --verbose .
+
+  test:
+    desc: ✅ Run tests
+    cmds:
+      - echo "✅ Running tests"
+      - task: install-dev
+      - cd ./$RENDER_DIR/infra && uv run pytest --quiet --tb=short --disable-warnings
+
   validate-windows-compatibility:
     desc: "Validate that file paths don't contain characters illegal on Windows"
     cmds:
