@@ -30,6 +30,9 @@ root:
       - name: "DataRobot Deployed LLM"
         value: "deployed_llm.py"
         requires: deployed_llm
+      - name: "DataRobot NIM Deployed LLM"
+        value: "nim_deployed_llm.py"
+        requires: nim_deployed_llm
       - name: "External LLM"
         value: "blueprint_with_external_llm.py"
         requires: external_llm
@@ -51,6 +54,24 @@ deployed_llm:
     type: string
     optional: false
     help: "Enter the deployment ID of the DataRobot custom model deployed LLM (e.g., 6510c7b7c4f3f9407e24a849)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
+
+nim_deployed_llm:
+  - env: {{llm_app_name|upper}}_NIM_DEPLOYMENT_ID
+    type: string
+    optional: false
+    help: "Enter the deployment ID of the DataRobot custom model deployed LLM (e.g., 6510c7b7c4f3f9407e24a849)."
+  - env: {{llm_app_name|upper}}_NIM_DEFAULT_MODEL
+    type: string
+    optional: false
+    help: "Enter the default model of the DataRobot custom model deployed LLM (e.g., meta-llama/Llama-3.1-8B)."
+  - env: {{llm_app_name|upper}}_NIM_DEFAULT_MODEL_FRIENDLY_NAME
+    type: string
+    optional: false
+    help: "Enter the friendly name of the DataRobot custom model deployed LLM (e.g., Llama-3.1-8B)."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
     default: "0"
