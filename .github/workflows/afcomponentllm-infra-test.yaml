@@ -29,11 +29,18 @@ jobs:
         run: |
           curl -fsSL https://get.pulumi.com | sh
           echo "/github/home/.pulumi/bin" >> $GITHUB_PATH
-      - name: Render copier instance
-        if: steps.setup-cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/render-copier-instance
+      - name: Render template
+        uses: datarobot-oss/copier-template-validator@main
         with:
-          copier-args: '--defaults'
+          working-directory: .
+          rendered-dir: ./rendered
+      - name: Copy fixture files
+        shell: sh
+        run: |
+          cp ./fixtures/infra/pyproject.toml ./rendered/infra/pyproject.toml
+          cp ./fixtures/infra/__init__.py ./rendered/infra/infra/__init__.py
+          cp ./fixtures/infra/Pulumi.yaml ./rendered/infra/Pulumi.yaml
+          touch ./rendered/infra/__init__.py
       - name: Setup infra files and install dependencies
         shell: sh
         working-directory: ./rendered/infra
