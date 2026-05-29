@@ -22,6 +22,9 @@
   <a href="/LICENSE">
     <img src="https://img.shields.io/github/license/datarobot-community/af-component-llm" alt="License">
   </a>
+  <a href="https://join.slack.com/t/datarobot-community/shared_invite/zt-3uzfp8k50-SUdMqeux25ok9_5wr4okrg">
+    <img src="https://img.shields.io/badge/%23applications-a?label=Slack&labelColor=30373D&color=81FBA6" alt="Slack #applications">
+  </a>
 </p>
 
 The LLM inference component. Deploys and/or configures LLM models or uses the DataRobot LLM Gateway for other components to leverage
@@ -168,7 +171,7 @@ The following are common issues you may encounter when setting up or using this 
 A YAML syntax error in `copier-module.yaml` (for example, a double closing quote on `short_description`) prevents the generator from running. Open the file and verify all quoted strings are properly terminated.
 
 **"Model not found in LLM Gateway catalog"**
-Check that `LLM_NAME_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-4o-mini-2024-07-18`) and that the model is active. Call `verify_llm_gateway_model_availability()` from the library module to list available models.
+Check that `LLM_NAME_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-5-mini-2025-08-07`) and that the model is active. Call `verify_llm_gateway_model_availability()` from the library module to list available models.
 
 **"Feature flags required but not enabled"**
 Some configuration strategies require DataRobot platform feature flags (`MLOPS`, `TEXT_GENERATION`, and others). Contact DataRobot support to have the required flags enabled on your account.
