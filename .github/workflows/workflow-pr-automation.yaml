@@ -59,8 +59,6 @@ jobs:
   notify-slack-scheduled:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     uses: datarobot-oss/github-actions/.github/workflows/notify-slack.yaml@0.0.9
-    with:
-      header_icon: model
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     permissions:
