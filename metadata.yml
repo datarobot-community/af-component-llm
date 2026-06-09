@@ -1,0 +1,6 @@
+display_name: "LLM"
+description: "Deploys and/or configures LLM models, or uses the DataRobot LLM Gateway for other components to leverage."
+tags: []
+repeatable: llm_app_name
+dependencies:
+  - base
