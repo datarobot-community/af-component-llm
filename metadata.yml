@@ -4,3 +4,7 @@ tags: []
 repeatable: llm_app_name
 dependencies:
   - base
+agent_guidance:
+  summary: >-
+    Provides LLM access via DataRobot deployment or the DataRobot LLM Gateway.
+    Required for any agent that calls an LLM. Dependencies (base) are resolved automatically.

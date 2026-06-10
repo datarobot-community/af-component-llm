@@ -3,6 +3,9 @@ llm_app_name:
   type: str
   default: "llm"
   help: "The name/folder of your LLM Deployment. Must be a Python-friendly name (letters, numbers, underscores only, no spaces)"
+  agent_guidance:
+    ask_user: false
+    reason: "Derive from the working directory name (slugified); only ask the user if multiple LLM components are being added."
   validator: >-
     {% if not llm_app_name %}ERROR: LLM app name cannot be empty
     {% elif ' ' in llm_app_name %}ERROR: LLM app name cannot contain spaces
