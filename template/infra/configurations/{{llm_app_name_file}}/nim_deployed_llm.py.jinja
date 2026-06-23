@@ -50,7 +50,7 @@ REQUIRED_FEATURE_FLAGS = {
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
 default_model: str = os.environ.get(
-    "{{llm_app_name|upper}}_NIM_DEFAULT_MODEL", "datarobot/datarobot-deployed-llm"
+    "{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/datarobot-deployed-llm"
 )
 
 # Verify everything is working
@@ -75,14 +75,9 @@ app_runtime_parameters = [
         value=proxy_llm_deployment.id,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_NIM_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
-    ),
-    datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_NIM_DEFAULT_MODEL_FRIENDLY_NAME",
-        type="string",
-        value=proxy_llm_deployment.label,
     ),
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="USE_DATAROBOT_LLM_GATEWAY",
@@ -97,7 +92,7 @@ custom_model_runtime_parameters = [
         value=proxy_llm_deployment.id,
     ),
     datarobot.CustomModelRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_NIM_DEFAULT_MODEL",
+        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
         type="string",
         value=default_model,
     ),
@@ -111,5 +106,4 @@ custom_model_runtime_parameters = [
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, proxy_llm_deployment.id)
 export("{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID", proxy_llm_deployment.id)
 export("{{llm_app_name|upper}}_NIM_DEFAULT_MODEL", default_model)
-export("{{llm_app_name|upper}}_NIM_DEFAULT_MODEL_FRIENDLY_NAME", proxy_llm_deployment.label)
 export("USE_DATAROBOT_LLM_GATEWAY", "0")
