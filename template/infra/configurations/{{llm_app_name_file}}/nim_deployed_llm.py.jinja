@@ -45,7 +45,9 @@ REQUIRED_FEATURE_FLAGS = {
     "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
 }
 
-{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID = os.environ["{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID"]
+{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID = os.environ.get(
+    "{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID", os.environ["NIM_DEPLOYMENT_ID"]
+)
 
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
