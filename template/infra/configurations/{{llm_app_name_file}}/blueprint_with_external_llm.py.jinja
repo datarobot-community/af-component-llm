@@ -92,6 +92,18 @@ llm_blueprint = datarobot.LlmBlueprint(
     ),
 )
 
+
+try:
+    from .guardrails import build_guard_configurations as _build_guard_configurations
+    guard_configurations = _build_guard_configurations(
+        prediction_environment=prediction_environment,
+        use_case=use_case,
+        runtime_environment_moderations=None,
+        project_name=PROJECT_NAME,
+    )
+except ImportError:
+    guard_configurations = []
+
 llm_custom_model = datarobot.CustomModel(
     resource_name="LLM Custom Model " + {{llm_app_name}}_resource_name,
     name="LLM Custom Model " + {{llm_app_name}}_resource_name,
@@ -102,6 +114,7 @@ llm_custom_model = datarobot.CustomModel(
     use_case_ids=[use_case.id],
     source_llm_blueprint_id=llm_blueprint.id,
     runtime_parameter_values=llm_credential_runtime_params,
+    guard_configurations=guard_configurations,
 )
 
 if prediction_environment_id := os.environ.get(
