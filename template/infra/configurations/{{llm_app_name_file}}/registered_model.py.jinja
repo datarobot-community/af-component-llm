@@ -119,7 +119,7 @@ llm_blueprint = datarobot.LlmBlueprint(
 
 
 try:
-    from .guardrails import build_guard_configurations as _build_guard_configurations
+    from .guardrails import build_guard_configurations as _build_guard_configurations  # ty: ignore[unresolved-import]
 
     guard_configurations = _build_guard_configurations(
         prediction_environment=prediction_environment,
