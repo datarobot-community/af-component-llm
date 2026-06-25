@@ -112,6 +112,7 @@ else:
 
 try:
     from .guardrails import build_guard_configurations as _build_guard_configurations
+
     guard_configurations = _build_guard_configurations(
         prediction_environment=prediction_environment,
         use_case=use_case,
