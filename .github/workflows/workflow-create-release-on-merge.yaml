@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   release:
-    uses: datarobot-oss/github-actions/.github/workflows/create-release-on-merge.yaml@0.0.9
+    uses: ./.github/workflows/create-release-on-merge.yaml
     permissions:
       contents: write
       pull-requests: read

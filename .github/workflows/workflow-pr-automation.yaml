@@ -1,5 +1,10 @@
 name: PR Automation
 
+# Dogfoods the PR-automation reusable workflows in THIS repo. Downstream repos
+# should copy examples/workflow-pr-automation.yaml instead (it pins @version).
+# Kept structurally in step with that example — using local `./` refs — so every
+# job is exercised here before a release tag is cut.
+
 on:
   pull_request_review:
     types: [submitted]
@@ -10,23 +15,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Triggered when a PR review is submitted with an "approved" state.
-  # Marks the PR as reviewed (e.g. applies a label or updates status) so the team
-  # knows it has passed code review and is ready for the next step.
+  # A PR review was submitted with an "approved" state -> mark it reviewed.
   mark-reviewed:
     if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
-    uses: datarobot-oss/github-actions/.github/workflows/mark-pr-reviewed.yaml@0.0.9
+    uses: ./.github/workflows/mark-pr-reviewed.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
     permissions:
       pull-requests: write
 
-  # Triggered when the "ready for review" label is added to a PR.
-  # Sends a Slack notification with PR metadata (title, author, diff size, URL)
-  # so reviewers are alerted that the PR is ready for their attention.
+  # A "ready for review" label was added -> Slack the team with PR metadata.
   notify-ready-for-review:
     if: github.event_name == 'pull_request' && contains(github.event.label.name, 'ready for review')
-    uses: datarobot-oss/github-actions/.github/workflows/mark-pr-to-review.yaml@0.0.9
+    uses: ./.github/workflows/mark-pr-to-review.yaml
     with:
       pr_number: ${{ github.event.pull_request.number }}
       pr_url: ${{ github.event.pull_request.html_url }}
@@ -40,12 +41,10 @@ jobs:
     permissions:
       pull-requests: write
 
-  # Triggered when a PR is opened or its title/description is edited.
-  # Parses the PR title or branch name for a Jira ticket ID and adds a link
-  # to the corresponding Jira issue in the PR description or as a comment.
+  # A PR was opened or its title/description edited -> add a Jira link comment.
   add-jira-link:
     if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'edited')
-    uses: datarobot-oss/github-actions/.github/workflows/add-jira-link.yaml@0.0.9
+    uses: ./.github/workflows/add-jira-link.yaml
     with:
       pr_title: ${{ github.event.pull_request.title }}
       pr_number: ${{ github.event.pull_request.number }}
@@ -53,15 +52,14 @@ jobs:
     permissions:
       pull-requests: write
 
-  # Triggered on a 30-minute cron schedule or manual workflow dispatch.
-  # Sends a Slack digest/reminder notification, useful for surfacing PRs
-  # that are still open and may need attention.
+  # Cron / manual dispatch -> Slack digest of open "ready for review" PRs.
   notify-slack-scheduled:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    uses: datarobot-oss/github-actions/.github/workflows/notify-slack.yaml@0.0.9
+    uses: ./.github/workflows/notify-slack.yaml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     permissions:
       contents: read
-      pull-requests: read
-      checks: read
+      # write so the digest can reconcile a missing "00 - Reviewed" label when
+      # the event-driven mark-reviewed run was never dispatched.
+      pull-requests: write
