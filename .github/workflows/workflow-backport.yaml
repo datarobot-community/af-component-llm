@@ -1,18 +1,22 @@
 name: Backport
 
-# Trigger wrapper that dogfoods the reusable backport workflow in THIS repo.
-# Downstream repos should copy examples/workflow-backport.yaml instead (it pins
-# a released @version of the reusable workflow). Kept structurally identical to
-# that example so both trigger paths — labels and manual dispatch — are exercised
-# here before a release is cut.
+# ─────────────────────────────────────────────────────────────────────────────
+# Backport
+# Cherry-picks a MERGED PR onto release branch(es), opening a PR per branch.
+# Trigger by adding a `backport <branch>` label, or via Actions → Run workflow
+# (enter a PR number + target branches). See BACKPORT.md for details & App setup.
+# ─────────────────────────────────────────────────────────────────────────────
+# REQUIRED LABELS  (run examples/workflow-ensure-labels.yaml once to create them)
+# - `backport <branch>`   — dev applies by hand to trigger; one per target branch.
+# - `backported <branch>` — added on success.
+# - `backport-failed`     — added when a cherry-pick conflicts.
+# - `do not merge`        — added to the backport PR when CI didn't auto-run.
+# ─────────────────────────────────────────────────────────────────────────────
 
+# Triggered by: a merged PR closed/labeled with a `backport <branch>` label, or manual dispatch.
 on:
-  # pull_request_target runs in the base-branch context with write access and
-  # secrets, and fires for labels added AFTER merge — both needed here. Safe for
-  # internal repos where PRs come from branches, not untrusted forks.
   pull_request_target:
     types: [closed, labeled]
-  # Manual backport of a merged PR onto arbitrary branch(es), no labels needed.
   workflow_dispatch:
     inputs:
       pr_number:
@@ -25,16 +29,10 @@ on:
         type: string
 
 jobs:
-  # Decide which backport labels this run should act on, then pass that as the
-  # korthout label_pattern. On merge (`closed`) we process every `backport
-  # <branch>` label present at that moment. On a later `labeled` event we scope
-  # korthout to ONLY the triggering label's branch — otherwise korthout
-  # reprocesses every backport label on the PR each time a new one is added,
-  # re-attempting branches that were already backported (duplicate/failed reruns).
+  # Flow 1 (labels): compute the korthout label_pattern — on a `labeled` event,
+  # scoped to just that label's branch (regex-escaped) so already-backported
+  # branches aren't reprocessed; on merge, every `backport <branch>` label.
   prepare:
-    # Only for MERGED PRs carrying at least one `backport <branch>` label —
-    # whether the label was added before merge (fires on `closed`) or after
-    # (fires on `labeled`).
     if: >-
       github.event_name == 'pull_request_target' &&
       github.event.pull_request.merged == true &&
@@ -53,37 +51,33 @@ jobs:
           LABEL_NAME: ${{ github.event.label.name }}
         run: |
           if [ "$ACTION" = "labeled" ]; then
-            # Restrict to just the triggering label's branch. Escape regex
-            # metacharacters that are legal in git branch names (e.g. the dot in
-            # release/12.0) so the branch matches literally and nothing else.
             BRANCH=${LABEL_NAME#backport }
             ESCAPED=$(printf '%s' "$BRANCH" | sed 's/[.$+(){}|]/\\&/g')
             echo "label_pattern=^backport (${ESCAPED})\$" >> "$GITHUB_OUTPUT"
           else
-            # Merge event: handle every backport label present on the PR at once.
             echo 'label_pattern=^backport ([^ ]+)$' >> "$GITHUB_OUTPUT"
           fi
 
+  # Cherry-pick the PR to each labeled branch. APP_ID/APP_PRIVATE_KEY are optional:
+  # with them the backport PR runs CI automatically; without, it falls back to
+  # GITHUB_TOKEN (no auto-CI) — see BACKPORT.md for the one-time App setup.
   backport:
     needs: prepare
-    uses: ./.github/workflows/backport.yaml
+    uses: datarobot-oss/github-actions/.github/workflows/backport.yaml@0.0.15
     with:
       pr_number: ${{ github.event.pull_request.number }}
       label_pattern: ${{ needs.prepare.outputs.label_pattern }}
     secrets:
-      # Optional — leave unset to fall back to GITHUB_TOKEN (no CI on backport PR).
       APP_ID: ${{ secrets.BACKPORT_APP_ID }}
       APP_PRIVATE_KEY: ${{ secrets.BACKPORT_APP_PRIVATE_KEY }}
     permissions:
       contents: write
       pull-requests: write
 
-  # Manual dispatch: backport a merged PR by number onto the given branch(es).
-  # fromJSON() converts the string dispatch input to the number the reusable
-  # workflow expects.
+  # Flow 2 (manual): backport the merged PR number + branch(es) from the dispatch form.
   backport-manual:
     if: github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/backport.yaml
+    uses: datarobot-oss/github-actions/.github/workflows/backport.yaml@0.0.15
     with:
       pr_number: ${{ fromJSON(inputs.pr_number) }}
       target_branches: ${{ inputs.target_branches }}
