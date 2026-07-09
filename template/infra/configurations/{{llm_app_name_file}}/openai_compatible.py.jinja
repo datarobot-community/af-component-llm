@@ -62,7 +62,7 @@ if openai_api_token:
 default_model: str = os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "openai/gpt-4o-mini")
 # LiteLLM routes to OpenAI-compatible endpoints when the model is prefixed with
 # the 'openai/' provider.
-if "/" not in default_model:
+if "openai/" not in default_model:
     default_model = f"openai/{default_model}"
 
 # Verify everything is configured properly for this configuration option.
