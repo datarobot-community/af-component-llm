@@ -71,10 +71,9 @@ validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 # Validate the endpoint, credentials, and model respond before wiring them in.
 verify_llm(default_model, api_base=openai_api_base or None)
 
-# Store the API token securely as a DataRobot credential.
-openai_credential = datarobot.ApiTokenCredential(
-    resource_name="OpenAI API Token [{{llm_app_name}}]",
-    api_token=openai_api_token,
+openai_api_token_credential = datarobot.ApiTokenCredential(
+    resource_name=f"{pulumi.get_project()} OPENAI_API_TOKEN [{{llm_app_name}}]",
+    api_token=os.environ.get("OPENAI_API_TOKEN", ""),
 )
 
 app_runtime_parameters = [
@@ -96,13 +95,8 @@ app_runtime_parameters = [
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="OPENAI_API_TOKEN",
         type="credential",
-        value=openai_credential.id,
+        value=openai_api_token_credential.id,
     ),
-    datarobot.ApplicationSourceRuntimeParameterValueArgs(
-        key="{{llm_app_name|upper}}_DEFAULT_MODEL",
-        type="string",
-        value=default_model,
-    ), 
 ]
 custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
