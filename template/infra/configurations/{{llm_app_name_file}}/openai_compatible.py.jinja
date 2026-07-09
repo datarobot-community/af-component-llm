@@ -59,11 +59,16 @@ if openai_api_token:
     os.environ.setdefault("OPENAI_API_KEY", openai_api_token)
     os.environ.setdefault("OPENAI_API_TOKEN", openai_api_token)
 
-default_model: str = os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "openai/gpt-4o-mini")
+_raw_model: str = os.environ.get(
+    "{{llm_app_name|upper}}_DEFAULT_MODEL",
+    "gpt-4o",
+)
+
 # LiteLLM routes to OpenAI-compatible endpoints when the model is prefixed with
 # the 'openai/' provider.
-if "openai/" not in default_model:
-    default_model = f"openai/{default_model}"
+default_model: str = (
+    _raw_model if _raw_model.startswith("openai/") else f"openai/{_raw_model}"
+)
 
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)    
@@ -117,7 +122,7 @@ custom_model_runtime_parameters = [
     datarobot.CustomModelRuntimeParameterValueArgs(
         key="OPENAI_API_TOKEN",
         type="credential",
-        value=openai_credential.id,
+        value=openai_api_token_credential.id,
     ),
 ]
 
