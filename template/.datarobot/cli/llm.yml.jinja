@@ -13,9 +13,11 @@ root:
 
       - If you want to use your LLM provider credentials instead of the LLM gateway (e.g. Azure OpenAI,
 
-      AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), or an OpenAI-compatible endpoint
+      AWS Bedrock, GCP VertexAI, Anthropic, Cohere or TogetherAI).
 
-      (e.g. Ollama, vLLM, a custom server), select "External LLM".
+      - If you want to use your OpenAI-compatible LLM provider credentials  select "OpenAI Compatible External LLM"
+
+      select "LLM Blueprint with LLM Gateway" for the most production-ready option.
 
       - If you need full DataRobot governance and monitoring with LLM Blueprint support,
 
@@ -109,16 +111,12 @@ external_llm:
       - name: "Cohere"
         requires: cohere
       - name: "TogetherAI"
-        requires: togetherai
-      - name: "OpenAI-compatible"
-        requires: openai_compatible        
+        requires: togetherai     
     help: >
       Choose which external LLM provider to use.
 
 
-      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI an OpenAI-compatible
-
-      (e.g. Ollama, vLLM, a custom server)
+      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere or TogetherAI.
 
 azure_openai:
   - env: OPENAI_API_KEY
