@@ -15,6 +15,10 @@ root:
 
       AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), select "External LLM".
 
+      - If you want to call an OpenAI-compatible endpoint directly (OpenAI, vLLM, Ollama,
+
+      LiteLLM proxy, etc.) without deploying DataRobot resources, select "OpenAI Compatible LLM".
+
       - If you need full DataRobot governance and monitoring with LLM Blueprint support,
 
       select "LLM Blueprint with LLM Gateway" for the most production-ready option.
@@ -36,6 +40,9 @@ root:
       - name: "External LLM"
         value: "blueprint_with_external_llm.py"
         requires: external_llm
+      - name: "OpenAI Compatible LLM"
+        value: "openai_compatible.py"
+        requires: openai_compatible
       - name: "LLM Blueprint with LLM Gateway"
         value: "blueprint_with_llm_gateway.py"
         requires: llm_gateway
@@ -110,6 +117,25 @@ external_llm:
 
 
       Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
+
+openai_compatible:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "openai/gpt-4o-mini"
+    optional: false
+    help: "Enter the OpenAI-compatible model to use (e.g., openai/gpt-4o-mini or gpt-4o-mini)."
+  - env: OPENAI_API_BASE
+    type: string
+    optional: false
+    help: "Enter the base URL of the OpenAI-compatible endpoint (e.g., https://api.openai.com/v1)."
+  - env: OPENAI_API_TOKEN
+    type: string
+    optional: false
+    help: "Enter the API token used to authenticate with the OpenAI-compatible endpoint."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
 
 azure_openai:
   - env: OPENAI_API_KEY

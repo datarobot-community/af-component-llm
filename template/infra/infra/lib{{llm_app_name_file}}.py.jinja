@@ -95,6 +95,16 @@ class ProviderCredential:
                     pass  # If file creation fails, skip cross-population
                 continue
 
+            # OpenAI-compatible endpoints may provide the key as `_API_TOKEN`,
+            # but LiteLLM authenticates with `_API_KEY`. Cross-populate both so
+            # either variable works.
+            if var_name in ("_API_TOKEN", "_API_KEY"):
+                for prefix in self.prefix_list:
+                    for alias in ("_API_TOKEN", "_API_KEY"):
+                        alias_var_name = f"{prefix}{alias}"
+                        if alias_var_name not in os.environ:
+                            os.environ[alias_var_name] = found_value
+
             # Copy the found value to all missing combinations
             for prefix in self.prefix_list:
                 full_var_name = f"{prefix}{var_name}"
@@ -171,6 +181,17 @@ PROVIDER_CREDENTIALS_MAP = {
             RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
             RuntimeParameterValueArgs(key="OPENAI_API_VERSION", type="string"),
             RuntimeParameterValueArgs(key="OPENAI_API_DEPLOYMENT_ID", type="string"),
+        ],
+    ),
+    # Generic OpenAI-compatible endpoints (OpenAI, vLLM, Ollama, LiteLLM proxy, etc.).
+    # LiteLLM authenticates with OPENAI_API_KEY; OPENAI_API_TOKEN is mapped onto it.
+    "openai": ProviderCredential(
+        provider="openai",
+        env_vars=["_API_KEY", "_API_TOKEN", "_API_BASE"],
+        prefix_list=["OPENAI"],
+        runtime_parameters=[
+            RuntimeParameterValueArgs(key="OPENAI_API_KEY", type="credential"),
+            RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
         ],
     ),
     "bedrock": ProviderCredential(
@@ -309,6 +330,7 @@ def verify_llm(
     model_id: str | None = None,
     deployment_id: str | None = None,
     use_llm_gateway: bool = False,
+    api_base: str | None = None,
 ) -> None:
     """
     Verify that the specified LLM is valid, available, and you can say hello
@@ -339,8 +361,9 @@ def verify_llm(
         """
         raise ValueError(err_message)
 
-    # Map legacy to LiteLLM
-    if "-" in model_id:
+    # Map legacy dash-format model IDs (e.g. 'azure-gpt-4') to the LiteLLM
+    # slash-format (e.g. 'azure/gpt-4'). Slash-format IDs are passed through.
+    if "/" not in model_id and "-" in model_id:
         provider_aliases = {
             "azure": "azure",
             "amazon": "bedrock",
@@ -350,10 +373,18 @@ def verify_llm(
         if provider in provider_aliases:
             provider = provider_aliases[provider]
             model_id = provider + "/" + "-".join(model_id.split("-")[1:])
-    # Map common aliases to their canonical provider names
-    provider = provider_aliases.get(provider, provider)
-    response = completion(
-        model=model_id,
-        messages=[{"content": "Hi", "role": "user"}],
-    )
+
+    # `api_base` targets a custom OpenAI-compatible endpoint; LiteLLM reads
+    # credentials from the environment (OPENAI_API_KEY).
+    if api_base:
+        response = completion(
+            model=model_id,
+            messages=[{"content": "Hi", "role": "user"}],
+            api_base=api_base,
+        )
+    else:
+        response = completion(
+            model=model_id,
+            messages=[{"content": "Hi", "role": "user"}],
+        )
     assert len(response["choices"][0]["message"]["content"]) > 0
