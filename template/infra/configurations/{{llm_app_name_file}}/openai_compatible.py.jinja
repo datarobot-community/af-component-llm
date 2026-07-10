@@ -26,6 +26,7 @@ as a DataRobot credential and wires the endpoint configuration into the app.
 
 import os
 from datarobot_pulumi_utils.pulumi import export
+import pulumi
 import pulumi_datarobot as datarobot
 
 from .lib{{ llm_app_name|lower|replace('-','_')}} import (
