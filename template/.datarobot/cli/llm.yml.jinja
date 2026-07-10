@@ -85,9 +85,6 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
   - key: external_llm_provider
     optional: false
     options:
@@ -154,7 +151,7 @@ bedrock:
 vertexai:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
-    default: "vertexai/custom_llm"
+    default: "vertex_ai/claude-opus-4@20250514"
     optional: true
     help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., vertexai/custom_llm)."
   - env: VERTEXAI_APPLICATION_CREDENTIALS
