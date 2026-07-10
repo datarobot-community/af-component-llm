@@ -85,11 +85,6 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 external_llm:
-  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
-    type: string
-    default: "azure-openai-gpt-5-mini"
-    optional: true
-    help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
   - key: external_llm_provider
     optional: false
     options:
@@ -112,6 +107,11 @@ external_llm:
       Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 azure_openai:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "azure/openai-gpt-5-mini"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., azure/openai-gpt-5-mini)."
   - env: OPENAI_API_KEY
     type: string
     optional: false
@@ -130,6 +130,11 @@ azure_openai:
     help: "Enter the OpenAI API version (e.g., 2024-08-01-preview)."
 
 bedrock:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0)."
   - env: AWS_ACCESS_KEY_ID
     type: string
     optional: false
@@ -144,6 +149,11 @@ bedrock:
     help: "Enter the AWS region name for Bedrock (e.g., us-east-1)."
 
 vertexai:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "vertexai/custom_llm"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., vertexai/custom_llm)."
   - env: VERTEXAI_APPLICATION_CREDENTIALS
     type: string
     optional: false
@@ -154,18 +164,33 @@ vertexai:
     help: "Enter the Google service account email."
 
 anthropic:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "anthropic/claude-3-5-sonnet-20240620"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., anthropic/claude-3-5-sonnet-20240620)."
   - env: ANTHROPIC_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Anthropic."
 
 cohere:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "cohere/command-r-plus"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., cohere/command-r-plus)."
   - env: COHERE_API_KEY
     type: string
     optional: false
     help: "Enter the API key for Cohere."
 
 togetherai:
+  - env: {{llm_app_name|upper}}_DEFAULT_MODEL
+    type: string
+    default: "together_ai/meta-llama/Llama-3.1-8B-Instruct-Turbo"
+    optional: true
+    help: "Enter the name of the external LLM model to use in LiteLLM format (e.g., together_ai/meta-llama/Llama-3.1-8B-Instruct-Turbo)."
   - env: TOGETHERAI_API_KEY
     type: string
     optional: false
