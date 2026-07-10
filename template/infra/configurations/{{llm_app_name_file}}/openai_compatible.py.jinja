@@ -71,7 +71,7 @@ default_model: str = (
 )
 
 # Verify everything is configured properly for this configuration option.
-validate_feature_flags(REQUIRED_FEATURE_FLAGS)    
+validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 
 # Validate the endpoint, credentials, and model respond before wiring them in.
 verify_llm(default_model, api_base=openai_api_base or None)
