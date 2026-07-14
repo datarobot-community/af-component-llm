@@ -50,7 +50,10 @@ root:
         requires: registered_model
       - name: "External LLM"
         value: "external_llm.py"
-        requires: external_llm  
+        requires: external_llm
+      - name: "OpenAI Compatible External LLM"
+        value: "openai_compatible.py"
+        requires: openai_compatible    
 
 llm_gateway:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
@@ -143,6 +146,7 @@ external_llm:
         requires: togetherai
       - name: "OpenAI-compatible LLM"
         requires: openai_compatible
+        value:
     help: >
       Choose which external LLM provider to use.
 
