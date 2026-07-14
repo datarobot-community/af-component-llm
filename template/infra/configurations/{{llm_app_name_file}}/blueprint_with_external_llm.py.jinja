@@ -23,6 +23,7 @@ import os
 import pulumi
 import pulumi_datarobot as datarobot
 from datarobot_pulumi_utils.pulumi import export
+from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 
 from . import use_case
@@ -186,17 +187,18 @@ datarobot_url = (
     .removesuffix("/api/v2")
 )
 
-deployment_url = pulumi.Output.format(
-    "{0}/console-nextgen/deployments/{1}/overview",
-    datarobot_url,
-    llm_deployment.id,
-)
-
 rag_playground_url = pulumi.Output.format(
     "{0}/usecases/{1}/playgrounds/{2}/comparison/chats",
     datarobot_url,
     use_case.id,
     playground.id,
+)
+
+
+deployment_url = pulumi.Output.format(
+    "{0}/console-nextgen/deployments/{1}/overview",
+    datarobot_url,
+    llm_deployment.id,
 )
 
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
