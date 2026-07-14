@@ -8,8 +8,8 @@ During project setup (`dr start` or `dr dotenv setup`), the CLI prompts you to c
 |---|---|---|---|
 | [LLM Gateway](#llm-gateway) | Getting started quickly | No | No |
 | [DataRobot Deployed LLM](#datarobot-deployed-llm) | Using an existing deployment | Yes (Playground only) | No |
-| [External LLM](#external-llm) | Bringing your own provider (Azure, Bedrock, etc.) | Yes | Yes |
-| [OpenAI Compatible LLM](#openai-compatible-llm) | Calling an OpenAI-compatible endpoint directly (OpenAI, vLLM, Ollama, etc.) | No | Yes |
+| [LLM Blueprint with External LLM](#llm-blueprint-with-external-llm) | Governed deployment of your own provider (Azure, Bedrock, OpenAI-compatible, etc.) | Yes | Yes |
+| [External LLM](#external-llm) | Calling your own provider directly, no DataRobot deployment | No | Yes |
 | [LLM Blueprint with LLM Gateway](#llm-blueprint-with-llm-gateway) | Most production controls, multiple LLMs via one deployment | Yes | No |
 | [LLM from a Registered Model](#llm-from-a-registered-model) | Deploying a registered model (e.g. NVIDIA NIM) | Yes | No |
 
@@ -62,9 +62,9 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 |---|---|
 | `Deployment ID [LLM_APP_NAME]` | ID of the referenced deployment |
 
-## External LLM
+## LLM Blueprint with External LLM
 
-Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Vertex, Cohere, or TogetherAI. You can monitor and scale your LLM with the added benefits of the DataRobot platform such as governance, guard models, controlled API access, and monitoring.
+Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Vertex, Cohere, TogetherAI, or any OpenAI-compatible endpoint and want it wrapped in a DataRobot LLM Blueprint and deployment. You can monitor and scale your LLM with the added benefits of the DataRobot platform such as governance, guard models, controlled API access, and monitoring.
 
 ### Resources created
 
@@ -81,7 +81,7 @@ Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Ver
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `azure-openai-gpt-5-mini` | External LLM model name |
+| `<LLM>_DEFAULT_MODEL` | No | `azure/openai-gpt-5-mini` | External LLM model name (LiteLLM format) |
 | `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
 | `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
 
@@ -130,6 +130,15 @@ You must also configure credentials for your chosen provider:
 |---|---|
 | `TOGETHERAI_API_KEY` | API key |
 
+#### OpenAI-compatible
+
+Use this provider for OpenAI itself or any endpoint that speaks the OpenAI chat completions protocol (e.g. vLLM, Ollama, or a LiteLLM proxy). Set `<LLM>_DEFAULT_MODEL` with the `openai/` prefix (e.g. `openai/gpt-4o-mini`).
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_BASE` | Base URL of the OpenAI-compatible endpoint (e.g. `https://api.openai.com/v1`) |
+| `OPENAI_API_TOKEN` | API token used to authenticate with the endpoint |
+
 **Note:** The default `verify_llm` call in `blueprint_with_external_llm.py` assumes Azure OpenAI. For other providers, update the string passed to `verify_llm`. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for details on what string to pass.
 
 ### Stack outputs
@@ -142,29 +151,22 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 | `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page |
 | `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat |
 
-## OpenAI Compatible LLM
+## External LLM
 
-Use this option to call an OpenAI-compatible chat completions API directly, without deploying any DataRobot LLM resources. This works with OpenAI itself and any endpoint that speaks the OpenAI chat completions protocol (e.g. Azure AI, vLLM, Ollama, or a LiteLLM proxy).
-
-The component validates the endpoint at deploy time (a short "Hi" chat completion), stores the API token as a DataRobot credential, and wires the endpoint configuration into the application. LLM calls are made with [LiteLLM](https://docs.litellm.ai/docs/providers/openai_compatible) using the `openai/` provider prefix and your custom `OPENAI_API_BASE`.
+Use this option when you want to call your own external LLM provider (Azure, Bedrock, Anthropic, Vertex, Cohere, TogetherAI, or any OpenAI-compatible endpoint) directly, without creating a DataRobot LLM Blueprint or deployment. The component wires the model configuration into the application, and LLM calls are made with [LiteLLM](https://docs.litellm.ai/docs/providers) using the provider prefix in `<LLM>_DEFAULT_MODEL`.
 
 ### Resources created
 
-| Resource | Type | Description |
-|---|---|---|
-| OpenAI API Token | `datarobot.ApiTokenCredential` | Securely stores `OPENAI_API_TOKEN` for the application |
-
-No playground, blueprint, or deployment is created.
+This option deploys no DataRobot resources.
 
 ### Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | Yes | `openai/gpt-4o-mini` | Model to use. The `openai/` prefix is added automatically if omitted |
-| `OPENAI_API_BASE` | Yes | -- | Base URL of the OpenAI-compatible endpoint (e.g. `https://api.openai.com/v1`) |
-| `OPENAI_API_TOKEN` | Yes | -- | Bearer token used to authenticate with the endpoint. Mapped onto `OPENAI_API_KEY` for LiteLLM |
+| `<LLM>_DEFAULT_MODEL` | No | `azure/openai-gpt-5-mini` | External LLM model name (LiteLLM format) |
+| `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
 
-**Note:** `OPENAI_API_TOKEN` and `OPENAI_API_KEY` are treated as aliases. If you set one, the other is populated automatically so LiteLLM can authenticate.
+Configure the same provider credentials as [LLM Blueprint with External LLM](#llm-blueprint-with-external-llm) (Azure OpenAI, AWS Bedrock, Google VertexAI, Anthropic, Cohere, TogetherAI, or OpenAI-compatible).
 
 ### Stack outputs
 
@@ -172,8 +174,8 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 
 | Output | Description |
 |---|---|
-| `<LLM>_DEFAULT_MODEL` | The resolved model ID (with the `openai/` prefix) |
-| `OPENAI_API_BASE` | The configured endpoint base URL |
+| `<LLM>_DEFAULT_MODEL` | The configured model ID (LiteLLM format) |
+| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Friendly name shown in the UI |
 | `USE_DATAROBOT_LLM_GATEWAY` | Always `0` for this option |
 
 ## LLM Blueprint with LLM Gateway
@@ -264,8 +266,8 @@ Available configuration files:
 |---|---|
 | `gateway_direct.py` | LLM Gateway |
 | `deployed_llm.py` | DataRobot Deployed LLM |
-| `blueprint_with_external_llm.py` | External LLM |
-| `openai_compatible.py` | OpenAI Compatible LLM |
+| `blueprint_with_external_llm.py` | LLM Blueprint with External LLM |
+| `external_llm.py` | External LLM |
 | `blueprint_with_llm_gateway.py` | LLM Blueprint with LLM Gateway |
 | `registered_model.py` | LLM from a Registered Model |
 
@@ -288,7 +290,7 @@ INFRA_ENABLE_LLM=deployed_llm.py
 
 When you select DataRobot Deployed LLM during `dr start` (or `dr dotenv setup`), the template sets `USE_DATAROBOT_LLM_GATEWAY=0` automatically so the agent calls your deployment directly instead of routing through the LLM Gateway. You do not need to set `USE_DATAROBOT_LLM_GATEWAY` manually for this option.
 
-#### External LLM (Azure OpenAI example)
+#### LLM Blueprint with External LLM (Azure OpenAI example)
 
 ```sh
 INFRA_ENABLE_LLM=blueprint_with_external_llm.py
@@ -299,10 +301,19 @@ OPENAI_API_DEPLOYMENT_ID='<your deployment_id>'
 OPENAI_API_KEY='<your_api_key>'
 ```
 
-#### OpenAI Compatible LLM
+#### LLM Blueprint with External LLM (OpenAI-compatible provider example)
 
 ```sh
-INFRA_ENABLE_LLM=openai_compatible.py
+INFRA_ENABLE_LLM=blueprint_with_external_llm.py
+LLM_DEFAULT_MODEL="openai/gpt-4o-mini"
+OPENAI_API_BASE="https://api.openai.com/v1"
+OPENAI_API_TOKEN="<your_api_token>"
+```
+
+#### External LLM (direct, no deployment)
+
+```sh
+INFRA_ENABLE_LLM=external_llm.py
 LLM_DEFAULT_MODEL="openai/gpt-4o-mini"
 OPENAI_API_BASE="https://api.openai.com/v1"
 OPENAI_API_TOKEN="<your_api_token>"
@@ -351,7 +362,7 @@ LLM Gateway additionally requires:
 
 In the tables above, `<LLM>` is a placeholder for your LLM app name in uppercase (e.g. if your app name is `llm`, variables are prefixed with `LLM_`). This is set by the `llm_app_name` template variable during project setup.
 
-`USE_DATAROBOT_LLM_GATEWAY` tells downstream consumers (e.g. the agent) whether to route LLM calls through the DataRobot LLM Gateway. It's exported as `1` by the gateway-based options (LLM Gateway, LLM Blueprint with LLM Gateway) and as `0` by DataRobot Deployed LLM and OpenAI Compatible LLM. External LLM and LLM from a Registered Model don't export it; consumers fall back to their own default.
+`USE_DATAROBOT_LLM_GATEWAY` tells downstream consumers (e.g. the agent) whether to route LLM calls through the DataRobot LLM Gateway. It's exported as `1` by the gateway-based options (LLM Gateway, LLM Blueprint with LLM Gateway) and as `0` by DataRobot Deployed LLM and the External LLM options (including the OpenAI-compatible provider). LLM from a Registered Model doesn't export it; consumers fall back to their own default.
 
 ## Further reading
 
