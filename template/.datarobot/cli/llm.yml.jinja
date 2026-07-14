@@ -94,6 +94,10 @@ registered_model:
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
 
 blueprint_with_external_llm:
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
   - key: external_llm_provider
     optional: false
     options:
@@ -116,6 +120,10 @@ blueprint_with_external_llm:
       Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 external_llm:
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
   - key: external_llm_provider
     optional: false
     options:
