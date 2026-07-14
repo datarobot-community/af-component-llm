@@ -13,7 +13,7 @@ root:
 
       - If you want to use your LLM provider credentials instead of the LLM gateway (e.g. Azure OpenAI,
 
-      AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), select "External LLM".
+      AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI), select "LLM Blueprint with External LLM".
 
       - If you need full DataRobot governance and monitoring with LLM Blueprint support,
 
@@ -22,6 +22,10 @@ root:
       - If you have an existing registered model (not yet deployed) that you want to use with
 
       an LLM Blueprint, select "LLM from a Registered Model".
+      
+      - If you want to use your LLM provider credentials instead of the LLM gateway without deployment
+
+      select "External LLM".
 
     options:
       - name: "LLM Gateway"
@@ -33,15 +37,18 @@ root:
       - name: "DataRobot NIM Deployed LLM"
         value: "nim_deployed_llm.py"
         requires: nim_deployed_llm
-      - name: "External LLM"
+      - name: "LLM Blueprint with External LLM"
         value: "blueprint_with_external_llm.py"
-        requires: external_llm
+        requires: blueprint_with_external_llm
       - name: "LLM Blueprint with LLM Gateway"
         value: "blueprint_with_llm_gateway.py"
         requires: llm_gateway
       - name: "LLM from a Registered Model"
         value: "registered_model.py"
         requires: registered_model
+      - name: "External LLM"
+        value: "external_llm.py"
+        requires: external_llm  
 
 llm_gateway:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
@@ -83,6 +90,28 @@ registered_model:
     default: 30
     optional: true
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
+
+blueprint_with_external_llm:
+  - key: external_llm_provider
+    optional: false
+    options:
+      - name: "Azure with OpenAI"
+        requires: azure_openai
+      - name: "Google VertexAI"
+        requires: vertexai
+      - name: "Anthropic"
+        requires: anthropic
+      - name: "Bedrock"
+        requires: bedrock
+      - name: "Cohere"
+        requires: cohere
+      - name: "TogetherAI"
+        requires: togetherai
+    help: >
+      Choose which external LLM provider to use.
+
+
+      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 external_llm:
   - key: external_llm_provider
