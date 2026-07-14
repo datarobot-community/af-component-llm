@@ -18,19 +18,10 @@ benefits of the DataRobot platform such as governance, guard models, controlled 
 and monitoring.
 """
 
-import datarobot as dr
 import os
-import pulumi
 import pulumi_datarobot as datarobot
 from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
-
-from . import use_case
-from .lib{{ llm_app_name|lower|replace('-','_')}} import (
-    get_runtime_values,
-    validate_feature_flags,
-    verify_llm,
-)
 
 __all__ = [
     "custom_model_runtime_parameters",
@@ -39,13 +30,6 @@ __all__ = [
     "{{llm_app_name}}_application_name",
     "{{llm_app_name}}_resource_name",
 ]
-
-REQUIRED_FEATURE_FLAGS = {
-    "ENABLE_MLOPS": True,
-    "ENABLE_CUSTOM_INFERENCE_MODEL": True,
-    "ENABLE_PUBLIC_NETWORK_ACCESS_FOR_ALL_CUSTOM_MODELS": True,
-    "ENABLE_MLOPS_TEXT_GENERATION_TARGET_TYPE": True,
-}
 
 __all__ = [
     "{{llm_app_name}}_application_name",
