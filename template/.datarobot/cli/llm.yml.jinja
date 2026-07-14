@@ -50,10 +50,7 @@ root:
         requires: registered_model
       - name: "External LLM"
         value: "external_llm.py"
-        requires: external_llm
-      - name: "OpenAI Compatible External LLM"
-        value: "openai_compatible.py"
-        requires: openai_compatible    
+        requires: external_llm  
 
 llm_gateway:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
@@ -116,13 +113,13 @@ blueprint_with_external_llm:
         requires: cohere
       - name: "TogetherAI"
         requires: togetherai
-      - name: "OpenAI-compatible LLM"
+      - name: "OpenAI-compatible"
         requires: openai_compatible
     help: >
       Choose which external LLM provider to use.
 
 
-      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
+      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI, or OpenAI compatible.
 
 external_llm:
   - env: USE_DATAROBOT_LLM_GATEWAY
@@ -144,14 +141,11 @@ external_llm:
         requires: cohere
       - name: "TogetherAI"
         requires: togetherai
-      - name: "OpenAI-compatible LLM"
-        requires: openai_compatible
-        value:
     help: >
       Choose which external LLM provider to use.
 
 
-      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, TogetherAI, or OpenAI-compatible.
+      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 openai_compatible:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
