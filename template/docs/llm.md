@@ -151,33 +151,6 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 | `Deployment Console [LLM_APP_NAME]` | URL to the Deployment Console page |
 | `RAG Playground URL [LLM_APP_NAME]` | URL to the Playground comparison chat |
 
-## External LLM
-
-Use this option when you want to call your own external LLM provider (Azure, Bedrock, Anthropic, Vertex, Cohere, TogetherAI, or any OpenAI-compatible endpoint) directly, without creating a DataRobot LLM Blueprint or deployment. The component wires the model configuration into the application, and LLM calls are made with [LiteLLM](https://docs.litellm.ai/docs/providers) using the provider prefix in `<LLM>_DEFAULT_MODEL`.
-
-### Resources created
-
-This option deploys no DataRobot resources.
-
-### Environment variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `<LLM>_DEFAULT_MODEL` | No | `azure/openai-gpt-5-mini` | External LLM model name (LiteLLM format) |
-| `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
-
-Configure the same provider credentials as [LLM Blueprint with External LLM](#llm-blueprint-with-external-llm) (Azure OpenAI, AWS Bedrock, Google VertexAI, Anthropic, Cohere, TogetherAI, or OpenAI-compatible).
-
-### Stack outputs
-
-Surfaced by `task infra:info` or `pulumi stack output`:
-
-| Output | Description |
-|---|---|
-| `<LLM>_DEFAULT_MODEL` | The configured model ID (LiteLLM format) |
-| `<LLM>_DEFAULT_MODEL_FRIENDLY_NAME` | Friendly name shown in the UI |
-| `USE_DATAROBOT_LLM_GATEWAY` | Always `0` for this option |
-
 ## LLM Blueprint with LLM Gateway
 
 The most flexible option with the most production controls. Uses the LLM Blueprint and LLM Gateway options to enable multiple LLMs through a single deployment with all of the DataRobot governance and monitoring.
@@ -267,7 +240,6 @@ Available configuration files:
 | `gateway_direct.py` | LLM Gateway |
 | `deployed_llm.py` | DataRobot Deployed LLM |
 | `blueprint_with_external_llm.py` | LLM Blueprint with External LLM |
-| `external_llm.py` | External LLM |
 | `blueprint_with_llm_gateway.py` | LLM Blueprint with LLM Gateway |
 | `registered_model.py` | LLM from a Registered Model |
 
@@ -305,15 +277,6 @@ OPENAI_API_KEY='<your_api_key>'
 
 ```sh
 INFRA_ENABLE_LLM=blueprint_with_external_llm.py
-LLM_DEFAULT_MODEL="openai/gpt-4o-mini"
-OPENAI_API_BASE="https://api.openai.com/v1"
-OPENAI_API_TOKEN="<your_api_token>"
-```
-
-#### External LLM (direct, no deployment)
-
-```sh
-INFRA_ENABLE_LLM=external_llm.py
 LLM_DEFAULT_MODEL="openai/gpt-4o-mini"
 OPENAI_API_BASE="https://api.openai.com/v1"
 OPENAI_API_TOKEN="<your_api_token>"
