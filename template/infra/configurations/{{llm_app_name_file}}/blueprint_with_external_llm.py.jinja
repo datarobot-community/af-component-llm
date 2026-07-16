@@ -75,7 +75,7 @@ llm_credential_runtime_params = get_runtime_values(default_llm_id)
 # You combine that with azure/gpt-5-mini-2025-08-07 for LiteLLM to verify the model.
 # Similar instructions exist for Bedrock: https://docs.litellm.ai/docs/providers/bedrock
 # and Vertex: https://docs.litellm.ai/docs/providers/vertex
-verify_llm(f"azure/{os.getenv('OPENAI_API_DEPLOYMENT_ID')}")
+verify_llm(f"{default_model.removeprefix(datarobot/)}")
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
