@@ -94,6 +94,10 @@ external_llm:
     default: "azure-openai-gpt-5-mini"
     optional: true
     help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
   - key: external_llm_provider
     optional: false
     options:
