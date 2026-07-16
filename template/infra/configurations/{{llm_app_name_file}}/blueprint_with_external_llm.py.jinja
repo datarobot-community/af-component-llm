@@ -191,6 +191,11 @@ custom_model_runtime_parameters = [
         type="string",
         value=default_model,
     ),
+    datarobot.CustomModelRuntimeParameterValueArgs(
+        key="USE_DATAROBOT_LLM_GATEWAY",
+        type="string",
+        value="0",
+    ),
 ]
 
 # TODO(APP-5859): Move datarobot_url to af-component-base infra/__init__.py
@@ -216,4 +221,5 @@ pulumi.export("Deployment Console " + {{llm_app_name}}_resource_name, deployment
 export("{{llm_app_name|upper}}_DEPLOYMENT_ID", llm_deployment.id)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", default_llm_friendly_name)
+export("USE_DATAROBOT_LLM_GATEWAY", "0")
 pulumi.export("RAG Playground URL " + {{llm_app_name}}_resource_name, rag_playground_url)
