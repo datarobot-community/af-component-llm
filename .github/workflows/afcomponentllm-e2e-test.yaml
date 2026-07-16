@@ -33,7 +33,6 @@ jobs:
     # Skip fork PRs so integration secrets are not exposed to untrusted code.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
     runs-on: "ubuntu-latest"
-    environment: integration
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -75,9 +74,6 @@ jobs:
           echo "${PULUMI_SHA256} ${workdir}/${tarball}" | sha256sum -c -
           tar -xzf "${workdir}/${tarball}" -C "${workdir}"
           echo "${workdir}/pulumi" >> "$GITHUB_PATH"
-      - name: Install task
-        run: |
-          curl -fsSL https://taskfile.dev/install.sh | sh -s -- -d /usr/local/bin
       - name: Run E2E
         shell: bash
         env:
@@ -93,7 +89,7 @@ jobs:
           OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
         run: |
           set -euo pipefail
-          task ${{ matrix.task }} 2>&1 | tee "e2e-${{ matrix.configuration }}.log"
+          uvx --from go-task-bin task ${{ matrix.task }} 2>&1 | tee "e2e-${{ matrix.configuration }}.log"
       - name: Tear down E2E resources
         if: always()
         shell: bash
@@ -117,7 +113,7 @@ jobs:
           set -x
           (cd "$infra" && uv run pulumi login --local) || true
           (cd "$infra" && uv run pulumi cancel --yes --stack "$stack") || true
-          (cd "$rendered" && task -t Taskfile.yml destroy -- --yes --skip-preview) || true
+          (cd "$rendered" && uvx --from go-task-bin task -t Taskfile.yml destroy -- --yes --skip-preview) || true
           (cd "$infra" && uv run pulumi stack rm -f -y "$stack") || true
       - name: Upload E2E logs
         if: failure() || cancelled()
