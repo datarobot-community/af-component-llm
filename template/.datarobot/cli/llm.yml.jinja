@@ -83,6 +83,10 @@ registered_model:
     default: 30
     optional: true
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
 
 external_llm:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL

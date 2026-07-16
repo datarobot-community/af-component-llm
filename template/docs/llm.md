@@ -8,6 +8,7 @@ During project setup (`dr start` or `dr dotenv setup`), the CLI prompts you to c
 |---|---|---|---|
 | [LLM Gateway](#llm-gateway) | Getting started quickly | No | No |
 | [DataRobot Deployed LLM](#datarobot-deployed-llm) | Using an existing deployment | Yes (Playground only) | No |
+| [DataRobot NIM Deployed LLM](#datarobot-nim-deployed-llm) | Using an existing NVIDIA NIM deployment | Yes (Playground only) | No |
 | [External LLM](#external-llm) | Bringing your own provider (Azure, Bedrock, etc.) | Yes | Yes |
 | [LLM Blueprint with LLM Gateway](#llm-blueprint-with-llm-gateway) | Most production controls, multiple LLMs via one deployment | Yes | No |
 | [LLM from a Registered Model](#llm-from-a-registered-model) | Deploying a registered model (e.g. NVIDIA NIM) | Yes | No |
@@ -60,6 +61,35 @@ Surfaced by `task infra:info` or `pulumi stack output`:
 | Output | Description |
 |---|---|
 | `Deployment ID [LLM_APP_NAME]` | ID of the referenced deployment |
+
+## DataRobot NIM Deployed LLM
+
+Use this option when you already have an NVIDIA NIM model deployed on DataRobot. The component pulls the deployment into the playground and use case. You must provision and keep the NIM deployment running yourself.
+
+### Resources created
+
+| Resource | Type | Description |
+|---|---|---|
+| LLM Playground | `datarobot.Playground` | Playground linked to the use case |
+
+The component references the existing NIM deployment and its prediction environment.
+
+### Environment variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `<LLM>_NIM_DEPLOYMENT_ID` or `NIM_DEPLOYMENT_ID` | Yes | -- | Deployment ID of the existing NIM LLM |
+| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/datarobot-deployed-llm` | Model identifier (e.g. `meta-llama/Llama-3.1-8B`) |
+
+### Stack outputs
+
+Surfaced by `task infra:info` or `pulumi stack output`:
+
+| Output | Description |
+|---|---|
+| `Deployment ID [LLM_APP_NAME]` | ID of the referenced NIM deployment |
+| `<LLM>_NIM_DEPLOYMENT_ID` | Same deployment ID (uppercase export for runtime) |
+| `USE_DATAROBOT_LLM_GATEWAY` | `0` |
 
 ## External LLM
 
@@ -229,6 +259,7 @@ Available configuration files:
 |---|---|
 | `gateway_direct.py` | LLM Gateway |
 | `deployed_llm.py` | DataRobot Deployed LLM |
+| `nim_deployed_llm.py` | DataRobot NIM Deployed LLM |
 | `blueprint_with_external_llm.py` | External LLM |
 | `blueprint_with_llm_gateway.py` | LLM Blueprint with LLM Gateway |
 | `registered_model.py` | LLM from a Registered Model |
@@ -251,6 +282,14 @@ INFRA_ENABLE_LLM=deployed_llm.py
 ```
 
 When you select DataRobot Deployed LLM during `dr start` (or `dr dotenv setup`), the template sets `USE_DATAROBOT_LLM_GATEWAY=0` automatically so the agent calls your deployment directly instead of routing through the LLM Gateway. You do not need to set `USE_DATAROBOT_LLM_GATEWAY` manually for this option.
+
+#### DataRobot NIM Deployed LLM
+
+```sh
+NIM_DEPLOYMENT_ID=<your_nim_deployment_id>
+LLM_DEFAULT_MODEL=<your_nim_model_id>
+INFRA_ENABLE_LLM=nim_deployed_llm.py
+```
 
 #### External LLM (Azure OpenAI example)
 
@@ -306,7 +345,15 @@ LLM Gateway additionally requires:
 
 In the tables above, `<LLM>` is a placeholder for your LLM app name in uppercase (e.g. if your app name is `llm`, variables are prefixed with `LLM_`). This is set by the `llm_app_name` template variable during project setup.
 
-`USE_DATAROBOT_LLM_GATEWAY` tells downstream consumers (e.g. the agent) whether to route LLM calls through the DataRobot LLM Gateway. It's exported as `1` by the gateway-based options (LLM Gateway, LLM Blueprint with LLM Gateway) and as `0` by DataRobot Deployed LLM. External LLM and LLM from a Registered Model don't export it; consumers fall back to their own default.
+`USE_DATAROBOT_LLM_GATEWAY` tells downstream consumers (e.g. the agent) whether to route LLM calls through the DataRobot LLM Gateway. It's exported as `1` by the gateway-based options (LLM Gateway, LLM Blueprint with LLM Gateway) and as `0` by DataRobot Deployed LLM and DataRobot NIM Deployed LLM. External LLM and LLM from a Registered Model don't export it; consumers fall back to their own default.
+
+## Runtime configuration and datarobot-genai
+
+After `pulumi up`, uppercase stack exports (for example `<LLM>_DEPLOYMENT_ID`, `USE_DATAROBOT_LLM_GATEWAY`, `<LLM>_DEFAULT_MODEL`) are written for runtime use. In an App Framework recipe project, these values are typically present in the project `.env` after deploy.
+
+[`datarobot-genai`](https://github.com/datarobot-oss/datarobot-genai) `get_llm()` reads this environment to route calls to the LLM Gateway, a DataRobot deployment, NIM, or an external provider. Ensure the exports for your chosen option are set before starting application or agent code.
+
+The `af-component-llm` component repository runs maintainer end-to-end smoke tests against live endpoints after each configuration deploys. See that repository's README for local and CI setup.
 
 ## Further reading
 
