@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 # named so it can never be mistaken for a real model. Users can override it with
 # {{llm_app_name|upper}}_DEFAULT_MODEL when they want the real name (e.g. so datarobot-genai
 # can match provider-specific reasoning parameters).
-DEPLOYED_LLM_PLACEHOLDER_MODEL = "datarobot/placeholder-unused-deployed-llm"
+DEPLOYED_LLM_PLACEHOLDER_MODEL = "datarobot/datarobot-deployed-llm"
 
 
 def ensure_datarobot_prefix(model_name: str) -> str:

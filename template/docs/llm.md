@@ -50,7 +50,7 @@ The component references the existing deployment and its prediction environment.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `<LLM>_DEPLOYMENT_ID` | Yes | -- | Deployment ID of the existing LLM (e.g. `6510c7b7c4f3f9407e24a849`) |
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/placeholder-unused-deployed-llm` | Model label. The deployment routes by its ID, so this is inert; set it to the real model name if you want datarobot-genai to match provider-specific reasoning parameters. |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model label. The deployment routes by its ID, so this is inert; set it to the real model name if you want datarobot-genai to match provider-specific reasoning parameters. |
 
 **Note:** The deployment ID variable was formerly named `TEXTGEN_DEPLOYMENT_ID`. Use `<LLM>_DEPLOYMENT_ID` in current templates.
 
@@ -79,7 +79,7 @@ The component references the existing NIM deployment and its prediction environm
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `NIM_DEPLOYMENT_ID` (or `<LLM>_NIM_DEPLOYMENT_ID`) | Yes | -- | Deployment ID of the existing NIM LLM. Exported and read at runtime as `NIM_DEPLOYMENT_ID`. |
-| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/placeholder-unused-deployed-llm` | Model your NIM serves (e.g. `meta-llama/Llama-3.1-8B`); stored `datarobot/`-prefixed. The placeholder is only a last-resort fallback. |
+| `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/datarobot-deployed-llm` | Model your NIM serves (e.g. `meta-llama/Llama-3.1-8B`); stored `datarobot/`-prefixed. The placeholder is only a last-resort fallback. |
 
 ### Stack outputs
 
@@ -231,7 +231,7 @@ This option creates two deployments:
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `TEXTGEN_REGISTERED_MODEL_ID` | Yes | -- | ID of the registered model |
-| `<LLM>_DEFAULT_MODEL` | No | `datarobot/placeholder-unused-deployed-llm` | Model label. The blueprint deployment routes by its ID, so this is inert; set it to the real model name for reasoning-parameter matching. |
+| `<LLM>_DEFAULT_MODEL` | No | `datarobot/datarobot-deployed-llm` | Model label. The blueprint deployment routes by its ID, so this is inert; set it to the real model name for reasoning-parameter matching. |
 | `DATAROBOT_TIMEOUT_MINUTES` | No | `30` | Timeout in minutes for DataRobot operations. Increase for models that require GPU allocations |
 
 ### Stack outputs
