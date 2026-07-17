@@ -182,7 +182,7 @@ List all tasks with `task --list` (prefix `test-e2e:`). Each task applies the co
 RUN_NIM_E2E=1 task test-e2e:nim-deployed-llm
 ```
 
-**CI** — [`.github/workflows/afcomponentllm-e2e-test.yaml`](.github/workflows/afcomponentllm-e2e-test.yaml) runs the five standard configurations on push/PR to `main` using the `integration` environment secrets. Pulumi stacks are named `pr-e2e-test-llm-{config}-run-{id}` (PRs) or `e2e-test-llm-{config}-run-{id}` (main) for alignment with recipe cleanup cron.
+**CI** — [`.github/workflows/afcomponentllm-e2e-test.yaml`](.github/workflows/afcomponentllm-e2e-test.yaml) runs the five standard configurations on push/PR to `main` using repository/organization CI secrets. Pulumi stacks are named `pr-e2e-test-llm-{config}-run-{id}` (PRs) or `e2e-test-llm-{config}-run-{id}` (main) for alignment with recipe cleanup cron.
 
 
 # Updating
