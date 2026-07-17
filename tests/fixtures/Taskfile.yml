@@ -1,0 +1,28 @@
+---
+# https://taskfile.dev
+version: '3'
+dotenv: ['.env']
+includes:
+  infra:
+    taskfile: ./infra/Taskfile.yml
+    dir: ./infra
+tasks:
+  default:
+    cmds:
+      - task --list --sort none
+    silent: true
+
+  install:
+    desc: Install infra dependencies
+    cmds:
+      - task: infra:install
+
+  deploy:
+    desc: Deploy LLM infra with pulumi
+    cmds:
+      - task: infra:deploy
+
+  destroy:
+    desc: Destroy LLM infra with pulumi
+    cmds:
+      - task: infra:destroy

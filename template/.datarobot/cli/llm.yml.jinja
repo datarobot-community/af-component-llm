@@ -33,7 +33,7 @@ root:
       - name: "DataRobot NIM Deployed LLM"
         value: "nim_deployed_llm.py"
         requires: nim_deployed_llm
-      - name: "External LLM"
+      - name: "LLM Blueprint with External LLM"
         value: "blueprint_with_external_llm.py"
         requires: external_llm
       - name: "LLM Blueprint with LLM Gateway"
@@ -83,6 +83,10 @@ registered_model:
     default: 30
     optional: true
     help: "Enter the timeout in minutes for DataRobot operations (default: 30 minutes)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
 
 external_llm:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
@@ -90,6 +94,10 @@ external_llm:
     default: "azure-openai-gpt-5-mini"
     optional: true
     help: "Enter the name of the external LLM model to use (e.g., gpt-5-mini)."
+  - env: USE_DATAROBOT_LLM_GATEWAY
+    type: string
+    default: "0"
+    hidden: true
   - key: external_llm_provider
     optional: false
     options:

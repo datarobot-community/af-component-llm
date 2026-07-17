@@ -41,6 +41,7 @@ The component ships a Pulumi-based infrastructure module and a DataRobot CLI con
 - [Component dependencies](#component-dependencies)
 - [Configuration strategies](#configuration-strategies)
 - [Local development](#local-development)
+- [End-to-end tests](#end-to-end-tests)
 - [Updating](#updating)
 - [Troubleshooting](#troubleshooting)
 - [Next steps and cross-links](#next-steps-and-cross-links)
@@ -105,6 +106,7 @@ During setup, the interactive prompt asks you to choose one of five LLM configur
 | `blueprint_with_external_llm` | Creates an LLM Blueprint backed by an external provider (Azure, Bedrock, Vertex AI, Anthropic, Cohere, or TogetherAI). |
 | `blueprint_with_llm_gateway` | Full governance path: combines the LLM Gateway with an external model and registers it as a DataRobot deployment. |
 | `registered_model` | Uses an existing registered model with an LLM Blueprint. |
+| `nim_deployed_llm` | Points to an existing NVIDIA NIM deployment (manual provisioning; optional in maintainer E2E). |
 
 Each strategy exports a Pulumi stack output with the deployment ID and model identifier your application can consume at runtime.
 
@@ -144,6 +146,43 @@ task validate-windows-compatibility
 ```
 
 The rendered template lands in `.rendered/infra/`. You can inspect or run the generated Pulumi code there before contributing changes upstream. The `render-template` task (called automatically by `install-dev`) drives this using Copier defaults.
+
+
+# End-to-end tests
+
+Maintainer E2E tests live in this repository (not in the Copier template). They render each LLM configuration, run `pulumi up` where needed, and smoke-test [`datarobot-genai`](https://github.com/datarobot-oss/datarobot-genai) `get_llm()` for CrewAI, LangGraph, and LlamaIndex.
+
+**Prerequisites**
+
+- [`task`](https://taskfile.dev) and [`uv`](https://docs.astral.sh/uv/)
+- [Pulumi CLI](https://www.pulumi.com/docs/install/)
+- DataRobot credentials and configuration-specific secrets (see [`.env.sample`](.env.sample))
+
+**Run locally**
+
+```bash
+cp .env.sample .env   # fill in values
+uv sync --extra e2e
+task test-e2e:gateway-direct
+```
+
+List all tasks with `task --list` (prefix `test-e2e:`). Each task applies the correct environment masks for its configuration before deploy and pytest.
+
+| Task | Configuration |
+|------|----------------|
+| `test-e2e:gateway-direct` | `gateway_direct` |
+| `test-e2e:blueprint-with-llm-gateway` | `blueprint_with_llm_gateway` |
+| `test-e2e:deployed-llm` | `deployed_llm` |
+| `test-e2e:blueprint-with-external-llm` | `blueprint_with_external_llm` |
+| `test-e2e:registered-model` | `registered_model` |
+
+**NIM (manual only)** — requires a running NIM deployment; not run in CI:
+
+```bash
+RUN_NIM_E2E=1 task test-e2e:nim-deployed-llm
+```
+
+**CI** — [`.github/workflows/afcomponentllm-e2e-test.yaml`](.github/workflows/afcomponentllm-e2e-test.yaml) runs the five standard configurations on push/PR to `main` using the `integration` environment secrets. Pulumi stacks are named `pr-e2e-test-llm-{config}-run-{id}` (PRs) or `e2e-test-llm-{config}-run-{id}` (main) for alignment with recipe cleanup cron.
 
 
 # Updating

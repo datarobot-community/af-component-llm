@@ -1,0 +1,126 @@
+---
+name: af-component-llm E2E
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "template/**"
+      - "!template/docs/**"
+      - "tests/**"
+      - "Taskfile.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/afcomponentllm-e2e-test.yaml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "template/**"
+      - "!template/docs/**"
+      - "tests/**"
+      - "Taskfile.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/afcomponentllm-e2e-test.yaml"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Never cancel mid-deploy — risks orphaned DataRobot resources.
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  e2e:
+    name: "E2E / ${{ matrix.configuration }}"
+    # Skip fork PRs so integration secrets are not exposed to untrusted code.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - configuration: gateway_direct
+            task: test-e2e:gateway-direct
+          - configuration: blueprint_with_llm_gateway
+            task: test-e2e:blueprint-with-llm-gateway
+          - configuration: deployed_llm
+            task: test-e2e:deployed-llm
+          - configuration: blueprint_with_external_llm
+            task: test-e2e:blueprint-with-external-llm
+          - configuration: registered_model
+            task: test-e2e:registered-model
+    env:
+      PULUMI_STACK: ${{ github.ref == 'refs/heads/main' && format('e2e-test-llm-{0}-run-{1}', matrix.configuration, github.run_id) || format('pr-e2e-test-llm-{0}-run-{1}', matrix.configuration, github.run_id) }}
+    container:
+      image: ghcr.io/astral-sh/uv:python3.11-bookworm
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v6"
+      - name: Setup caching
+        uses: ./.github/actions/setup-caching
+        with:
+          python-version: python3.11
+          cache-key-suffix: e2e-${{ matrix.configuration }}
+      - name: Install pulumi
+        shell: bash
+        env:
+          PULUMI_VERSION: "3.249.0"
+          PULUMI_SHA256: "0c4acfac957f578e406a3ae9f7042c57f05c4ad9e4b1c83ba0fcf3395e2a0b74"
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          tarball="pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz"
+          curl -fsSL -o "${workdir}/${tarball}" \
+            "https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/${tarball}"
+          echo "${PULUMI_SHA256} ${workdir}/${tarball}" | sha256sum -c -
+          tar -xzf "${workdir}/${tarball}" -C "${workdir}"
+          echo "${workdir}/pulumi" >> "$GITHUB_PATH"
+      - name: Run E2E
+        shell: bash
+        env:
+          UV_CACHE_DIR: /.uv_cache
+          DATAROBOT_ENDPOINT: ${{ secrets.DATAROBOT_ENDPOINT }}
+          DATAROBOT_API_TOKEN: ${{ secrets.DATAROBOT_API_TOKEN }}
+          LLM_DEFAULT_MODEL: ${{ secrets.LLM_DEFAULT_MODEL }}
+          LLM_DEPLOYMENT_ID: ${{ secrets.LLM_DEPLOYMENT_ID }}
+          TEXTGEN_REGISTERED_MODEL_ID: ${{ secrets.TEXTGEN_REGISTERED_MODEL_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+          OPENAI_API_DEPLOYMENT_ID: ${{ secrets.OPENAI_API_DEPLOYMENT_ID }}
+          OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
+        run: |
+          set -euo pipefail
+          uvx --from go-task-bin task ${{ matrix.task }} 2>&1 | tee "e2e-${{ matrix.configuration }}.log"
+      - name: Tear down E2E resources
+        if: always()
+        shell: bash
+        env:
+          DATAROBOT_ENDPOINT: ${{ secrets.DATAROBOT_ENDPOINT }}
+          DATAROBOT_API_TOKEN: ${{ secrets.DATAROBOT_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          stack="${PULUMI_STACK}"
+          rendered=".rendered"
+          infra="${rendered}/infra"
+          if [ ! -d "$infra" ]; then
+            echo "No rendered infra dir for ${stack}; nothing to clean."
+            exit 0
+          fi
+          export PULUMI_CONFIG_PASSPHRASE=123
+          export PULUMI_HOME="${rendered}/.pulumi_home"
+          export PULUMI_STACK="${stack}"
+          export DATAROBOT_ENDPOINT
+          export DATAROBOT_API_TOKEN
+          set -x
+          (cd "$infra" && uv run pulumi login --local) || true
+          (cd "$infra" && uv run pulumi cancel --yes --stack "$stack") || true
+          (cd "$rendered" && uvx --from go-task-bin task -t Taskfile.yml destroy -- --yes --skip-preview) || true
+          (cd "$infra" && uv run pulumi stack rm -f -y "$stack") || true
+      - name: Upload E2E logs
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-${{ matrix.configuration }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            e2e-${{ matrix.configuration }}.log
+            ./.rendered/**/*.log
+          if-no-files-found: warn

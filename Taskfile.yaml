@@ -1,6 +1,17 @@
 version: '3'
+dotenv: ['.env']
 env:
   RENDER_DIR: .rendered
+vars:
+  E2E_STACK_PREFIX:
+    sh: |
+      if [ -n "${E2E_STACK_PREFIX:-}" ]; then
+        echo "$E2E_STACK_PREFIX"
+      elif [ "${GITHUB_REF:-}" = "refs/heads/main" ]; then
+        echo "e2e-test"
+      else
+        echo "pr-e2e-test"
+      fi
 tasks:
   lint-check:
     desc: 🧹 Check whether the codebase is linted
@@ -55,9 +66,12 @@ tasks:
       # Clean up the existing rendered directory except for .venv to speed up rendering and avoid conflict checks
       - cd ./$RENDER_DIR/ && [ -d . ] && find . -mindepth 1 -maxdepth 1 ! -name '.venv' -exec rm -rf {} + || true
       - uvx copier copy . ./$RENDER_DIR --defaults --vcs-ref=HEAD
-      - cp ./fixtures/infra/pyproject.toml ./$RENDER_DIR/infra/pyproject.toml
-      - cp ./fixtures/infra/__init__.py ./$RENDER_DIR/infra/infra/__init__.py
-      - cp ./fixtures/infra/Pulumi.yaml ./$RENDER_DIR/infra/Pulumi.yaml
+      - cp ./tests/fixtures/Taskfile.yml ./$RENDER_DIR/Taskfile.yml
+      - cp ./tests/fixtures/infra/pyproject.toml ./$RENDER_DIR/infra/pyproject.toml
+      - cp ./tests/fixtures/infra/__init__.py ./$RENDER_DIR/infra/infra/__init__.py
+      - cp ./tests/fixtures/infra/__main__.py ./$RENDER_DIR/infra/__main__.py
+      - cp ./tests/fixtures/infra/Taskfile.yml ./$RENDER_DIR/infra/Taskfile.yml
+      - cp ./tests/fixtures/infra/Pulumi.yaml ./$RENDER_DIR/infra/Pulumi.yaml
       - touch ./$RENDER_DIR/infra/__init__.py
   install-dev:
     desc: "Install dev"
@@ -65,3 +79,214 @@ tasks:
       - echo "Installing dev for LLM"
       - task: render-template
       - cd ./$RENDER_DIR/infra && uv sync --extra dev --quiet
+
+  render-template-e2e:
+    desc: "Render template and symlink an E2E LLM configuration"
+    vars:
+      CONFIG: '{{.CONFIG}}'
+    cmds:
+      - task: render-template
+      - rm -f {{.RENDER_DIR}}/infra/infra/llm.py
+      - ln -sf ../configurations/llm/{{.CONFIG}}.py {{.RENDER_DIR}}/infra/infra/llm.py
+
+  e2e:setup-pulumi:
+    internal: true
+    dir: '{{.RENDER_DIR}}/infra'
+    env:
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+      PULUMI_CONFIG_PASSPHRASE: "123"
+    cmds:
+      - mkdir -p "$PULUMI_HOME"
+      - uv run pulumi login --local
+      - uv run pulumi stack select -c "$PULUMI_STACK"
+
+  e2e:deploy:
+    internal: true
+    dir: '{{.RENDER_DIR}}'
+    env:
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+      PULUMI_CONFIG_PASSPHRASE: "123"
+    cmds:
+      - task -t Taskfile.yml install
+      - task -t Taskfile.yml deploy -- --yes --skip-preview
+
+  e2e:verify-genai:
+    internal: true
+    env:
+      RUN_E2E: "1"
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+      PULUMI_CONFIG_PASSPHRASE: "123"
+    cmds:
+      - uv sync --extra e2e --quiet
+      - |
+        _E2E_LLM_DEFAULT_MODEL="${LLM_DEFAULT_MODEL-}"
+        while IFS= read -r line; do
+          [ -n "$line" ] && export "$line"
+        done < <(
+          cd {{.RENDER_DIR}}/infra && uv run pulumi stack output --json | python3 -c "
+        import json, re, sys
+        for key, value in json.load(sys.stdin).items():
+            if value is not None and re.fullmatch(r'[A-Z][A-Z0-9_]*', key):
+                print(f'{key}={value}')
+        "
+        )
+        if [ -z "${_E2E_LLM_DEFAULT_MODEL}" ]; then
+          unset LLM_DEFAULT_MODEL
+        else
+          export LLM_DEFAULT_MODEL="$_E2E_LLM_DEFAULT_MODEL"
+        fi
+        uv run --extra e2e pytest -vv -s tests/e2e/
+
+  e2e:cleanup:
+    internal: true
+    dir: '{{.RENDER_DIR}}'
+    env:
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+      PULUMI_CONFIG_PASSPHRASE: "123"
+    cmds:
+      - |
+        if [ "${SKIP_CLEANUP:-}" = "1" ]; then
+          echo "SKIP_CLEANUP is set, skipping cleanup"
+          exit 0
+        fi
+        if [ -z "${PULUMI_STACK:-}" ]; then
+          echo "No PULUMI_STACK set, nothing to clean up"
+          exit 0
+        fi
+      - cd infra && uv run pulumi cancel --yes --stack "$PULUMI_STACK" || true
+      - task -t Taskfile.yml destroy -- --yes --skip-preview || true
+      - cd infra && uv run pulumi stack rm -f -y "$PULUMI_STACK" || true
+
+  e2e:run:
+    internal: true
+    vars:
+      CONFIG: '{{.CONFIG}}'
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+    cmds:
+      - task: render-template-e2e
+        vars:
+          CONFIG: '{{.CONFIG}}'
+      - task: e2e:setup-pulumi
+        vars:
+          PULUMI_STACK: '{{.PULUMI_STACK}}'
+          PULUMI_HOME: '{{.PULUMI_HOME}}'
+      - task: e2e:deploy
+        vars:
+          PULUMI_STACK: '{{.PULUMI_STACK}}'
+          PULUMI_HOME: '{{.PULUMI_HOME}}'
+      - task: e2e:verify-genai
+        vars:
+          PULUMI_STACK: '{{.PULUMI_STACK}}'
+          PULUMI_HOME: '{{.PULUMI_HOME}}'
+
+  e2e:run-with-cleanup:
+    internal: true
+    vars:
+      CONFIG: '{{.CONFIG}}'
+      PULUMI_STACK:
+        sh: |
+          prefix="{{.E2E_STACK_PREFIX}}"
+          if [ -n "${GITHUB_RUN_ID:-}" ]; then
+            echo "${prefix}-llm-{{.CONFIG}}-run-${GITHUB_RUN_ID}"
+          else
+            suffix="$(date +%s)-$(openssl rand -hex 4 2>/dev/null || echo $RANDOM)"
+            echo "${prefix}-llm-{{.CONFIG}}-${suffix}"
+          fi
+      PULUMI_HOME:
+        sh: echo "$(pwd)/{{.RENDER_DIR}}/.pulumi_home"
+    env:
+      PULUMI_STACK: '{{.PULUMI_STACK}}'
+      PULUMI_HOME: '{{.PULUMI_HOME}}'
+      PULUMI_CONFIG_PASSPHRASE: "123"
+    cmds:
+      - defer:
+          task: e2e:cleanup
+          vars:
+            PULUMI_STACK: '{{.PULUMI_STACK}}'
+            PULUMI_HOME: '{{.PULUMI_HOME}}'
+      - task: e2e:run
+        vars:
+          CONFIG: '{{.CONFIG}}'
+          PULUMI_STACK: '{{.PULUMI_STACK}}'
+          PULUMI_HOME: '{{.PULUMI_HOME}}'
+
+  test-e2e:gateway-direct:
+    desc: "E2E — LLM Gateway direct (no deployment)"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "1"
+      LLM_DEPLOYMENT_ID: ""
+      LLM_NIM_DEPLOYMENT_ID: ""
+      NIM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: gateway_direct
+
+  test-e2e:blueprint-with-llm-gateway:
+    desc: "E2E — blueprint with LLM Gateway deployment"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "1"
+      LLM_DEPLOYMENT_ID: ""
+      LLM_NIM_DEPLOYMENT_ID: ""
+      NIM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: blueprint_with_llm_gateway
+
+  test-e2e:deployed-llm:
+    desc: "E2E — import existing deployed LLM"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_DEFAULT_MODEL: ""
+      LLM_NIM_DEPLOYMENT_ID: ""
+      NIM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: deployed_llm
+
+  test-e2e:blueprint-with-external-llm:
+    desc: "E2E — blueprint with external LLM (e.g. Azure OpenAI)"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_DEFAULT_MODEL: ""
+      LLM_DEPLOYMENT_ID: ""
+      LLM_NIM_DEPLOYMENT_ID: ""
+      NIM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: blueprint_with_external_llm
+
+  test-e2e:registered-model:
+    desc: "E2E — deploy from registered model"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_DEFAULT_MODEL: ""
+      LLM_DEPLOYMENT_ID: ""
+      LLM_NIM_DEPLOYMENT_ID: ""
+      NIM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: registered_model
+
+  # Optional — requires a manually provisioned NIM deployment (not run in CI).
+  # Set RUN_NIM_E2E=1 and NIM_DEPLOYMENT_ID / LLM_NIM_DEFAULT_MODEL in .env first.
+  test-e2e:nim-deployed-llm:
+    desc: "E2E — NIM deployed LLM (optional, manual NIM required)"
+    status:
+      - test "$RUN_NIM_E2E" = "1"
+    env:
+      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_DEPLOYMENT_ID: ""
+    cmds:
+      - task: e2e:run-with-cleanup
+        vars:
+          CONFIG: nim_deployed_llm

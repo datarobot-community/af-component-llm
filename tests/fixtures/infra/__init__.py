@@ -16,24 +16,22 @@ Core and first Pulumi set of resources.
 """
 
 import os
-from pathlib import Path
 
 import pulumi
 import pulumi_datarobot as datarobot
+from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 
-__all__ = ["use_case", "project_dir"]
-
-project_dir = Path(__file__).parent.parent
+__all__ = ["use_case"]
 
 if use_case_id := os.environ.get("DATAROBOT_DEFAULT_USE_CASE"):
     pulumi.info(f"Using existing use case '{use_case_id}'")
 
     use_case = datarobot.UseCase.get(
         id=use_case_id,
-        resource_name="DataRobot Agent Templates [PRE-EXISTING]",
+        resource_name="DataRobot LLM Templates [PRE-EXISTING]",
     )
 else:
     use_case = datarobot.UseCase(
-        resource_name=f"DataRobot Agent Templates [{project_dir.name}]",
-        description="""This is a template for DataRobot Agents.""",
+        resource_name=f"DataRobot LLM Templates [{PROJECT_NAME}]",
+        description="""This is a template for DataRobot LLM deployments.""",
     )

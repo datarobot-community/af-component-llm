@@ -1,4 +1,6 @@
 .idea/
 .rendered/
 .python-version
-.env*
+.env
+.env.*
+!.env.sample

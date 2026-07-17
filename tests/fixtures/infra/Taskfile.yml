@@ -1,0 +1,51 @@
+---
+# https://taskfile.dev
+version: '3'
+vars:
+  UV_CMD:
+    sh: echo "uv"
+  PULUMI_STACK_COMMAND:
+    sh: |
+      if [ -n "${PULUMI_STACK:-}" ]; then
+        echo "--stack $PULUMI_STACK"
+      else
+        echo ""
+      fi
+tasks:
+  install:
+    silent: true
+    desc: "[infra] Install uv dependencies"
+    cmds:
+      - echo "Updating local dependencies for infra"
+      - "{{.UV_CMD}} sync --extra dev --quiet"
+
+  install-pulumi-plugin:
+    silent: true
+    cmds:
+      - "{{.UV_CMD}} run pulumi plugin install resource datarobot v0.10.27 --server https://github.com/datarobot-community/pulumi-datarobot/releases/download/v0.10.27/"
+
+  select-env-stack:
+    silent: true
+    cmds:
+      - |
+        if [ -n "${PULUMI_STACK:-}" ]; then
+          {{.UV_CMD}} run pulumi stack select -c $PULUMI_STACK
+        fi
+
+  deploy:
+    desc: "[infra] Deploy LLM resources with pulumi"
+    cmds:
+      - echo "[infra] Running pulumi up"
+      - task: install-pulumi-plugin
+      - task: select-env-stack
+      - "{{.UV_CMD}} run pulumi up {{.PULUMI_STACK_COMMAND}} {{.CLI_ARGS}}"
+    silent: true
+
+  destroy:
+    desc: "[infra] Teardown deployed resources with pulumi"
+    cmds:
+      - echo "[infra] Running pulumi destroy"
+      - task: install-pulumi-plugin
+      - task: select-env-stack
+      - "{{.UV_CMD}} run pulumi destroy {{.PULUMI_STACK_COMMAND}} {{.CLI_ARGS}}"
+    silent: true
