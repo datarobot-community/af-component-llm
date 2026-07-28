@@ -100,7 +100,7 @@ external_llm:
     type: string
     default: "datarobot/azure/gpt-5-mini"
     optional: true
-    help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). Stored datarobot/-prefixed automatically."
+    help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, nebius/moonshotai/Kimi-K2.7-Code, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). Stored datarobot/-prefixed automatically."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
     default: "0"
@@ -110,6 +110,8 @@ external_llm:
     options:
       - name: "Azure with OpenAI"
         requires: azure_openai
+      - name: "OpenAI-compatible (Nebius, Groq, xAI, DeepSeek, vLLM, ...)"
+        requires: openai_compatible
       - name: "Google VertexAI"
         requires: vertexai
       - name: "Anthropic"
@@ -124,7 +126,8 @@ external_llm:
       Choose which external LLM provider to use.
 
 
-      Supported providers are: Azure OpenAI, AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
+      Supported providers are: Azure OpenAI, any OpenAI-compatible endpoint (Nebius, Groq, xAI,
+      DeepSeek, self-hosted vLLM, ...), AWS Bedrock, GCP VertexAI, Anthropic, Cohere, or TogetherAI.
 
 azure_openai:
   - env: OPENAI_API_KEY
@@ -143,6 +146,16 @@ azure_openai:
     type: string
     optional: false
     help: "Enter the OpenAI API version (e.g., 2024-08-01-preview)."
+
+openai_compatible:
+  - env: OPENAI_API_KEY
+    type: string
+    optional: false
+    help: "Enter the provider API key."
+  - env: OPENAI_API_BASE
+    type: string
+    optional: false
+    help: "Enter the provider's OpenAI-compatible base URL (e.g., https://api.tokenfactory.us-central1.nebius.com/v1). Set {{llm_app_name|upper}}_DEFAULT_MODEL with the LiteLLM provider prefix, e.g. nebius/moonshotai/Kimi-K2.7-Code."
 
 bedrock:
   - env: AWS_ACCESS_KEY_ID
