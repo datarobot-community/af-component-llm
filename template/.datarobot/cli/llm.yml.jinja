@@ -96,10 +96,13 @@ registered_model:
     hidden: true
 
 external_llm:
+  # Required (not optional): this model string carries the LiteLLM provider prefix that selects the
+  # provider, so `dr dotenv setup` must always prompt for it. Left optional, the flow silently keeps
+  # the azure default and routes non-Azure credentials to Azure (a /openai/deployments/... 404).
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
     default: "datarobot/azure/gpt-5-mini"
-    optional: true
+    optional: false
     help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, nebius/moonshotai/Kimi-K2.7-Code, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). Stored datarobot/-prefixed automatically."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
