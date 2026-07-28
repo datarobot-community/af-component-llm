@@ -207,7 +207,9 @@ PROVIDER_CREDENTIALS_MAP = {
         runtime_parameters=[
             RuntimeParameterValueArgs(key="OPENAI_API_KEY", type="credential"),
             RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
-            RuntimeParameterValueArgs(key="OPENAI_API_VERSION", type="string"),
+            RuntimeParameterValueArgs(
+                key="OPENAI_API_VERSION", type="string", default="2024-08-01-preview"
+            ),
             RuntimeParameterValueArgs(key="OPENAI_API_DEPLOYMENT_ID", type="string"),
         ],
     ),
