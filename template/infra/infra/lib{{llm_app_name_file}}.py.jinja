@@ -140,7 +140,7 @@ class ProviderCredential:
                     pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key=param.key,
                         type=param.type,
-                        value=os.environ.get(param.key) or param.default,
+                        value=os.environ.get(param.key) or param.default or "",
                     )
                 )
             elif param.type == "credential":
