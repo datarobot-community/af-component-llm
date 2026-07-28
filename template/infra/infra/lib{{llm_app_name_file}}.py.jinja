@@ -16,19 +16,19 @@ Utility functions for creating needed runtime parameters, credentials, and valid
 the LLM configuration is functional prior to deployment.
 """
 
-from dataclasses import dataclass, field
+import logging
 import os
 import tempfile
 from collections import namedtuple
+from dataclasses import dataclass, field
 from pathlib import Path
-import logging
 
 import datarobot
 import pulumi
 import pulumi_datarobot
 from datarobot_pulumi_utils.common.feature_flags import (
-    eval_feature_flag_statuses,
     FeatureFlagSet,
+    eval_feature_flag_statuses,
 )
 from litellm import completion
 
@@ -97,24 +97,26 @@ class ProviderCredential:
                 try:
                     with open(found_value, "r") as f:
                         json_content = f.read()
-                    if "GOOGLE_SERVICE_ACCOUNT" not in os.environ:
-                        os.environ["GOOGLE_SERVICE_ACCOUNT"] = json_content
-                except (FileNotFoundError, IOError):
-                    pass  # If file doesn't exist, skip cross-population
+                except OSError:
+                    continue  # If file isn't readable, skip cross-population
+                if "GOOGLE_SERVICE_ACCOUNT" not in os.environ:
+                    os.environ["GOOGLE_SERVICE_ACCOUNT"] = json_content
                 continue
 
             if var_name == "_SERVICE_ACCOUNT":
                 # GOOGLE_SERVICE_ACCOUNT is a JSON string, need to create file and set GOOGLE_APPLICATION_CREDENTIALS
                 try:
-                    temp_file = tempfile.NamedTemporaryFile(
+                    with tempfile.NamedTemporaryFile(
                         mode="w", suffix=".json", delete=False
+                    ) as temp_file:
+                        temp_file.write(found_value)
+                except OSError:
+                    log.exception(
+                        "Failed to create temp file for GOOGLE_APPLICATION_CREDENTIALS"
                     )
-                    temp_file.write(found_value)
-                    temp_file.close()
-                    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
-                except Exception:
-                    pass  # If file creation fails, skip cross-population
+                    continue
+                if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
                 continue
 
             # Copy the found value to all missing combinations
