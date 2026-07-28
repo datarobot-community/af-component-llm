@@ -109,18 +109,25 @@ external_llm:
     optional: false
     options:
       - name: "Azure with OpenAI"
+        value: "OpenAI"
         requires: azure_openai
       - name: "OpenAI-compatible (Nebius, Groq, xAI, DeepSeek, vLLM, ...)"
+        value: "OpenAICompatible"
         requires: openai_compatible
       - name: "Google VertexAI"
+        value: "VertexAI"
         requires: vertexai
       - name: "Anthropic"
+        value: "Anthropic"
         requires: anthropic
       - name: "Bedrock"
+        value: "Bedrock"
         requires: bedrock
       - name: "Cohere"
+        value: "Cohere"
         requires: cohere
       - name: "TogetherAI"
+        value: "TogetherAI"
         requires: togetherai
     help: >
       Choose which external LLM provider to use.
@@ -131,7 +138,7 @@ external_llm:
 
 azure_openai:
   - env: OPENAI_API_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the OpenAI API key."
   - env: OPENAI_API_BASE
@@ -149,7 +156,7 @@ azure_openai:
 
 openai_compatible:
   - env: OPENAI_API_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the provider API key."
   - env: OPENAI_API_BASE
@@ -159,11 +166,11 @@ openai_compatible:
 
 bedrock:
   - env: AWS_ACCESS_KEY_ID
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the AWS access key ID for Bedrock."
   - env: AWS_SECRET_ACCESS_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the AWS secret access key for Bedrock."
   - env: AWS_REGION_NAME
@@ -171,7 +178,7 @@ bedrock:
     optional: false
     help: "Enter the AWS region name for Bedrock (e.g., us-east-1)."
   - env: AWS_SESSION_TOKEN
-    type: string
+    type: secret_string
     optional: true
     help: "Optional AWS session token for temporary Bedrock credentials."
 
@@ -191,19 +198,19 @@ vertexai:
 
 anthropic:
   - env: ANTHROPIC_API_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the API key for Anthropic."
 
 cohere:
   - env: COHERE_API_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the API key for Cohere."
 
 togetherai:
   - env: TOGETHERAI_API_KEY
-    type: string
+    type: secret_string
     optional: false
     help: "Enter the API key for TogetherAI."
 
