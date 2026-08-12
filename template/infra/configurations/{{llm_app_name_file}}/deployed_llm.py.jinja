@@ -19,10 +19,11 @@ registered model that needs to be wrapped in an LLM Blueprint and deployed, choo
 """
 
 import os
-from datarobot_pulumi_utils.pulumi import export
-from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
+
 import pulumi
 import pulumi_datarobot as datarobot
+from datarobot_pulumi_utils.pulumi import export
+from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 
 from . import use_case
 from .lib{{ llm_app_name|lower|replace('-','_')}} import (
@@ -33,8 +34,8 @@ from .lib{{ llm_app_name|lower|replace('-','_')}} import (
 )
 
 __all__ = [
-    "custom_model_runtime_parameters",
     "app_runtime_parameters",
+    "custom_model_runtime_parameters",
     "default_model",
     "{{llm_app_name}}_application_name",
     "{{llm_app_name}}_resource_name",
