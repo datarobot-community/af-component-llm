@@ -160,7 +160,8 @@ You must also configure credentials for your chosen provider:
 |---|---|
 | `TOGETHERAI_API_KEY` | API key |
 
-**Note:** `blueprint_with_external_llm.py` smoke-tests the provider directly by stripping the `datarobot/` prefix from `<LLM>_DEFAULT_MODEL` (e.g. `azure/gpt-5-mini`, `bedrock/...`). For Azure it addresses the model by its deployment name via `OPENAI_API_DEPLOYMENT_ID`. Set `<LLM>_DEFAULT_MODEL` to match your provider. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for the exact model string each provider expects.
+**Note:** `blueprint_with_external_llm.py` reads `<LLM>_DEFAULT_MODEL` through `ensure_datarobot_prefix()`, which always stores and exports the canonical `datarobot/` form. It smoke-tests the provider directly by stripping the `datarobot/` prefix from `<LLM>_DEFAULT_MODEL` (e.g. `azure/gpt-5-mini`, `bedrock/...`). You can pass `provider/model` (e.g. `bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0`) or an already-prefixed value; both are normalized to `datarobot/provider/model` before export. The built-in default is `datarobot/azure/gpt-5-mini` — the Azure OpenAI GPT-5 Mini pairing used when no value is set.
+For Azure, LiteLLM addresses the model by deployment name, so when `OPENAI_API_DEPLOYMENT_ID` is set the smoke test uses `azure/<deployment_id>` instead. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for the exact model string each provider expects.
 
 ### Stack outputs
 
@@ -296,11 +297,24 @@ INFRA_ENABLE_LLM=nim_deployed_llm.py
 
 ```sh
 INFRA_ENABLE_LLM=blueprint_with_external_llm.py
-LLM_DEFAULT_MODEL="azure/gpt-5-mini-2025-08-07"
+LLM_DEFAULT_MODEL="datarobot/azure/gpt-5-mini"
+LLM_DEFAULT_LLM_ID="azure-openai-gpt-5-mini"
 OPENAI_API_VERSION='2024-08-01-preview'
 OPENAI_API_BASE='https://<your_custom_endpoint>.openai.azure.com'
 OPENAI_API_DEPLOYMENT_ID='<your deployment_id>'
 OPENAI_API_KEY='<your_api_key>'
+```
+
+#### External LLM (Bedrock example)
+
+```sh
+INFRA_ENABLE_LLM=blueprint_with_external_llm.py
+LLM_DEFAULT_MODEL="datarobot/bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
+LLM_DEFAULT_LLM_ID="bedrock-anthropic-claude-3-5-sonnet"
+LLM_DEFAULT_LLM_NAME="Bedrock Claude 3.5 Sonnet"
+AWS_ACCESS_KEY_ID='<your_access_key>'
+AWS_SECRET_ACCESS_KEY='<your_secret_key>'
+AWS_REGION_NAME='us-east-1'
 ```
 
 #### LLM Blueprint with LLM Gateway
