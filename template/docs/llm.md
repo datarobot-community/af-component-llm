@@ -309,7 +309,7 @@ OPENAI_API_KEY='<your_api_key>'
 
 ```sh
 INFRA_ENABLE_LLM=blueprint_with_external_llm.py
-LLM_DEFAULT_MODEL="datarobot/bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
+LLM_DEFAULT_MODEL="bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
 LLM_DEFAULT_LLM_ID="bedrock-anthropic-claude-3-5-sonnet"
 LLM_DEFAULT_LLM_NAME="Bedrock Claude 3.5 Sonnet"
 AWS_ACCESS_KEY_ID='<your_access_key>'
