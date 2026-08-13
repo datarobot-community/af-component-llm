@@ -96,9 +96,6 @@ registered_model:
     hidden: true
 
 external_llm:
-  # Required (not optional): this model string carries the LiteLLM provider prefix that selects the
-  # provider, so `dr dotenv setup` must always prompt for it. Left optional, the flow silently keeps
-  # the azure default and routes non-Azure credentials to Azure (a /openai/deployments/... 404).
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
     optional: false
