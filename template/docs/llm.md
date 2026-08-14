@@ -169,7 +169,7 @@ Any provider LiteLLM can route by model prefix. Set `<LLM>_DEFAULT_MODEL` with t
 |---|---|
 | `TOGETHERAI_API_KEY` | API key |
 
-**Note:** `blueprint_with_external_llm.py` smoke-tests the provider directly by stripping the `datarobot/` prefix from `<LLM>_DEFAULT_MODEL` (e.g. `azure/gpt-5-mini`, `nebius/...`, `bedrock/...`). For Azure it addresses the model by its deployment name via `OPENAI_API_DEPLOYMENT_ID`; every other OpenAI-compatible provider is addressed by the model string as-is (no deployment id). Set `<LLM>_DEFAULT_MODEL` to match your provider. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for the exact model string each provider expects.
+**Note**: `blueprint_with_external_llm.py` smoke-tests the provider directly by stripping the `datarobot/` prefix from `<LLM>_DEFAULT_MODEL` (e.g., `azure/gpt-5-mini`, `nebius/...`, `bedrock/...`). For Azure, it addresses the model by its deployment name via `OPENAI_API_DEPLOYMENT_ID`; every other OpenAI-compatible provider is addressed by the model string as-is (no deployment ID). Set `<LLM>_DEFAULT_MODEL` to match your provider. See [LiteLLM providers](https://docs.litellm.ai/docs/providers) for the exact model string each provider expects.
 
 ### Stack outputs
 
