@@ -132,7 +132,7 @@ Any provider LiteLLM can route by model prefix. Set `<LLM>_DEFAULT_MODEL` with t
 | Variable | Description |
 |---|---|
 | `OPENAI_API_KEY` | Provider API key |
-| `OPENAI_API_BASE` | Provider base URL (e.g. `https://api.tokenfactory.us-central1.nebius.com/v1`) |
+| `OPENAI_API_BASE` | Provider base URL (e.g., `https://api.tokenfactory.us-central1.nebius.com/v1`) |
 
 #### AWS Bedrock
 
