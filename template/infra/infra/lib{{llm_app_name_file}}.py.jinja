@@ -16,19 +16,19 @@ Utility functions for creating needed runtime parameters, credentials, and valid
 the LLM configuration is functional prior to deployment.
 """
 
-from dataclasses import dataclass, field
+import logging
 import os
 import tempfile
 from collections import namedtuple
+from dataclasses import dataclass, field
 from pathlib import Path
-import logging
 
 import datarobot
 import pulumi
 import pulumi_datarobot
 from datarobot_pulumi_utils.common.feature_flags import (
-    eval_feature_flag_statuses,
     FeatureFlagSet,
+    eval_feature_flag_statuses,
 )
 from litellm import completion
 
@@ -97,24 +97,26 @@ class ProviderCredential:
                 try:
                     with open(found_value, "r") as f:
                         json_content = f.read()
-                    if "GOOGLE_SERVICE_ACCOUNT" not in os.environ:
-                        os.environ["GOOGLE_SERVICE_ACCOUNT"] = json_content
-                except (FileNotFoundError, IOError):
-                    pass  # If file doesn't exist, skip cross-population
+                except OSError:
+                    continue  # If file isn't readable, skip cross-population
+                if "GOOGLE_SERVICE_ACCOUNT" not in os.environ:
+                    os.environ["GOOGLE_SERVICE_ACCOUNT"] = json_content
                 continue
 
             if var_name == "_SERVICE_ACCOUNT":
                 # GOOGLE_SERVICE_ACCOUNT is a JSON string, need to create file and set GOOGLE_APPLICATION_CREDENTIALS
                 try:
-                    temp_file = tempfile.NamedTemporaryFile(
+                    with tempfile.NamedTemporaryFile(
                         mode="w", suffix=".json", delete=False
+                    ) as temp_file:
+                        temp_file.write(found_value)
+                except OSError:
+                    log.exception(
+                        "Failed to create temp file for GOOGLE_APPLICATION_CREDENTIALS"
                     )
-                    temp_file.write(found_value)
-                    temp_file.close()
-                    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
-                except Exception:
-                    pass  # If file creation fails, skip cross-population
+                    continue
+                if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
                 continue
 
             # Copy the found value to all missing combinations
@@ -140,7 +142,7 @@ class ProviderCredential:
                     pulumi_datarobot.CustomModelRuntimeParameterValueArgs(
                         key=param.key,
                         type=param.type,
-                        value=os.environ.get(param.key) or param.default,
+                        value=os.environ.get(param.key) or param.default or "",
                     )
                 )
             elif param.type == "credential":
@@ -183,7 +185,23 @@ class ProviderCredential:
 
 
 PROVIDER_CREDENTIALS_MAP = {
+    # Generic OpenAI-compatible endpoint (Nebius, Groq, xAI, DeepSeek, self-hosted vLLM, ...).
+    # Only api_base + api_key: NO OPENAI_API_DEPLOYMENT_ID. deployment_id is an Azure-only concept
+    # and forwarding it makes LiteLLM rewrite the call as an Azure
+    # /openai/deployments/<id>/chat/completions request that non-Azure providers 404. This is the
+    # fallback for any provider not explicitly listed below (see get_runtime_values).
+    "openai": ProviderCredential(
+        provider="openai",
+        env_vars=["_API_KEY", "_API_BASE"],
+        prefix_list=["OPENAI"],
+        runtime_parameters=[
+            RuntimeParameterValueArgs(key="OPENAI_API_KEY", type="credential"),
+            RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
+        ],
+    ),
     # The "Big Three" Cloud Providers
+    # Azure is OpenAI-compatible but additionally addressed by an Azure deployment name, so it is
+    # the one provider that also carries OPENAI_API_DEPLOYMENT_ID (and an api version).
     "azure": ProviderCredential(
         provider="azure",
         env_vars=["_API_KEY", "_API_BASE", "_API_VERSION", "_API_DEPLOYMENT_ID"],
@@ -191,7 +209,9 @@ PROVIDER_CREDENTIALS_MAP = {
         runtime_parameters=[
             RuntimeParameterValueArgs(key="OPENAI_API_KEY", type="credential"),
             RuntimeParameterValueArgs(key="OPENAI_API_BASE", type="string"),
-            RuntimeParameterValueArgs(key="OPENAI_API_VERSION", type="string"),
+            RuntimeParameterValueArgs(
+                key="OPENAI_API_VERSION", type="string", default="2024-08-01-preview"
+            ),
             RuntimeParameterValueArgs(key="OPENAI_API_DEPLOYMENT_ID", type="string"),
         ],
     ),
@@ -259,7 +279,11 @@ def get_runtime_values(
     # Map common aliases to their canonical provider names
     provider_aliases = {"amazon": "bedrock", "google": "vertex_ai"}
     provider = provider_aliases.get(provider, provider)
-    credential = PROVIDER_CREDENTIALS_MAP[provider]
+    # Any provider without explicit handling (nebius, groq, xai, deepseek, ...) is treated as a
+    # generic OpenAI-compatible endpoint: api_base + api_key, no Azure-only deployment_id.
+    credential = PROVIDER_CREDENTIALS_MAP.get(
+        provider, PROVIDER_CREDENTIALS_MAP["openai"]
+    )
     return credential.runtime_parameter_values
 
 
