@@ -127,7 +127,7 @@ You must also configure credentials for your chosen provider:
 
 #### OpenAI-compatible (Nebius, Groq, xAI, DeepSeek, self-hosted vLLM, ...)
 
-Any provider LiteLLM can route by model prefix. Set `<LLM>_DEFAULT_MODEL` with that prefix (e.g. `nebius/moonshotai/Kimi-K2.7-Code`). **Do not** set `OPENAI_API_DEPLOYMENT_ID` — it is Azure-only and forces an Azure-style URL that non-Azure providers reject.
+First, provide the model prefix for the preferred provider that LiteLLM can route (DataRobot supports all LiteLLM inferencing providers). Set `<LLM>_DEFAULT_MODEL` with that prefix (e.g., `nebius/moonshotai/Kimi-K2.7-Code`). **Do not** set `OPENAI_API_DEPLOYMENT_ID` — it is Azure-only and forces an Azure-style URL that non-Azure providers reject.
 
 | Variable | Description |
 |---|---|
