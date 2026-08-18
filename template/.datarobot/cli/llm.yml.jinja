@@ -74,7 +74,7 @@ nim_deployed_llm:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
     optional: false
-    help: "Enter the model your NIM deployment serves (e.g., meta-llama/Llama-3.1-8B). Stored datarobot/-prefixed automatically."
+    help: "Enter the model your NIM deployment serves (e.g., meta-llama/Llama-3.1-8B). The template will automatically prepend /datarobot/."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
     default: "0"
@@ -99,7 +99,7 @@ external_llm:
   - env: {{llm_app_name|upper}}_DEFAULT_MODEL
     type: string
     optional: false
-    help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, nebius/moonshotai/Kimi-K2.7-Code, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). Stored datarobot/-prefixed automatically."
+    help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, nebius/moonshotai/Kimi-K2.7-Code, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). The template will automatically prepend /datarobot/."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
     default: "0"
