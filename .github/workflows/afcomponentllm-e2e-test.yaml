@@ -46,6 +46,11 @@ jobs:
             task: test-e2e:deployed-llm
           - configuration: blueprint_with_external_llm
             task: test-e2e:blueprint-with-external-llm
+            # An external LLM is served by our own provider credentials, so it needs a
+            # provider-shaped model string, and a Playground LLM ID that cannot be derived
+            # from it (no LLM Gateway catalog entry exists for an external endpoint).
+            default_model: azure/gpt-5-mini
+            default_llm_id: azure-openai-gpt-5-mini
           - configuration: registered_model
             task: test-e2e:registered-model
     env:
@@ -80,7 +85,8 @@ jobs:
           UV_CACHE_DIR: /.uv_cache
           DATAROBOT_ENDPOINT: ${{ secrets.DATAROBOT_ENDPOINT }}
           DATAROBOT_API_TOKEN: ${{ secrets.DATAROBOT_API_TOKEN }}
-          LLM_DEFAULT_MODEL: ${{ secrets.LLM_DEFAULT_MODEL }}
+          LLM_DEFAULT_MODEL: ${{ matrix.default_model || secrets.LLM_DEFAULT_MODEL }}
+          LLM_DEFAULT_LLM_ID: ${{ matrix.default_llm_id }}
           LLM_DEPLOYMENT_ID: ${{ secrets.LLM_DEPLOYMENT_ID }}
           TEXTGEN_REGISTERED_MODEL_ID: ${{ secrets.TEXTGEN_REGISTERED_MODEL_ID }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
