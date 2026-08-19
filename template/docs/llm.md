@@ -111,8 +111,35 @@ Use this option when you already have an LLM from Azure, Bedrock, Anthropic, Ver
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `<LLM>_DEFAULT_MODEL` | No | `datarobot/azure/gpt-5-mini` | External LLM model in `provider/model` form; stored `datarobot/`-prefixed |
-| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | DataRobot Playground LLM ID (a DataRobot identifier, not a LiteLLM model string) |
-| `<LLM>_DEFAULT_LLM_NAME` | No | `Azure OpenAI GPT-5 Mini` | Friendly name shown in the UI |
+| `<LLM>_DEFAULT_LLM_ID` | **Yes** | -- | DataRobot Playground LLM ID (a DataRobot identifier, not a LiteLLM model string, e.g. `azure-openai-gpt-5-mini`). Independent of `<LLM>_DEFAULT_MODEL`: your provider serves the model, this selects the DataRobot LLM definition the blueprint records. It cannot be derived, because an external endpoint has no LLM Gateway catalog entry. |
+| `<LLM>_DEFAULT_LLM_NAME` | No | The LLM ID | Friendly name shown in the UI |
+
+#### Choosing `<LLM>_DEFAULT_LLM_ID`
+
+A DataRobot LLM identifier, not a LiteLLM model string. It selects which provider integration
+DataRobot uses; your credentials point that integration at your own endpoint. The two settings
+answer different questions and neither can be derived from the other.
+
+| Provider | ID prefix | Example |
+|---|---|---|
+| Azure OpenAI | `azure-openai-` | `azure-openai-gpt-5-mini` |
+| AWS Bedrock | `amazon-` | `amazon-nova-pro` |
+| Anthropic | `anthropic-1p-` | `anthropic-1p-claude-sonnet-4-5` |
+| Google VertexAI | `google-` | `google-gemini-2.5-pro` |
+| TogetherAI | `togetherai-` | `togetherai-mistral-7b-instruct` |
+
+For an **OpenAI-compatible endpoint** (Nebius, Groq, xAI, DeepSeek, self-hosted vLLM, ...) use an
+`azure-openai-*` ID. It selects the OpenAI dialect, and the Azure-only routing parameters
+(`OPENAI_API_VERSION`, `OPENAI_API_DEPLOYMENT_ID`) are not sent for these providers -- forwarding a
+deployment ID is what makes the call get rewritten as an Azure route that non-Azure providers
+reject.
+
+To list every available ID:
+
+```python
+from datarobot.models.genai.llm import LLMDefinition
+print([llm["id"] for llm in LLMDefinition.list()])
+```
 
 You must also configure credentials for your chosen provider:
 
@@ -201,7 +228,7 @@ The most flexible option with the most production controls. Uses the LLM Bluepri
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `<LLM>_DEFAULT_MODEL` | Yes | `datarobot/azure/gpt-5-mini-2025-08-07` | Model ID from the LLM Gateway catalog |
-| `<LLM>_DEFAULT_LLM_ID` | No | `azure-openai-gpt-5-mini` | LLM ID used in the Playground |
+| `<LLM>_DEFAULT_LLM_ID` | No -- do not set | Derived from `<LLM>_DEFAULT_MODEL` | Not an input for this configuration. The LLM ID is read from the LLM Gateway catalog entry for your selected model, so it always follows that model. Setting it is ignored, with a warning. |
 
 ### Stack outputs
 

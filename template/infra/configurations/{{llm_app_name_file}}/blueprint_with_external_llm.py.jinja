@@ -56,17 +56,30 @@ REQUIRED_FEATURE_FLAGS = {
 default_model: str = ensure_datarobot_prefix(
     os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/azure/gpt-5-mini")
 )
-default_llm_id: str = os.environ.get(
-    "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
-    "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
-)
-default_llm_friendly_name: str = os.environ.get(
-    "{{llm_app_name|upper}}_DEFAULT_LLM_NAME",
-    "Azure OpenAI GPT-5 Mini",  # Shown in the Web UI
-)
-
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(default_llm_id)
+
+# This configuration runs with USE_DATAROBOT_LLM_GATEWAY=0: your own credentials call your own
+# provider, so there is no LLM Gateway catalog row to look at and nothing to derive from. The
+# two values below are genuinely independent inputs and neither implies the other:
+#   {{llm_app_name|upper}}_DEFAULT_MODEL  -- what LiteLLM calls (your provider/deployment)
+#   {{llm_app_name|upper}}_DEFAULT_LLM_ID -- which DataRobot LLM the Playground blueprint uses
+# There is deliberately no default for the LLM id: hardcoding one labelled every external
+# blueprint as Azure OpenAI GPT-5 Mini regardless of the provider actually in use.
+default_llm_id: str | None = os.environ.get("{{llm_app_name|upper}}_DEFAULT_LLM_ID")
+if not default_llm_id:
+    raise ValueError(
+        "{{llm_app_name|upper}}_DEFAULT_LLM_ID is required for the external LLM "
+        "configuration. Set it to the DataRobot LLM the Playground blueprint should use "
+        "(e.g. 'azure-openai-gpt-5-mini'). To list the available ids:\n"
+        "    from datarobot.models.genai.llm import LLMDefinition\n"
+        "    print([llm['id'] for llm in LLMDefinition.list()])"
+    )
+default_llm_friendly_name: str = (
+    os.environ.get("{{llm_app_name|upper}}_DEFAULT_LLM_NAME") or default_llm_id
+)
+# Credentials follow the *model*, not the LLM id -- deriving them from the LLM id sent
+# Azure keys to whatever provider the model actually named.
+llm_credential_runtime_params = get_runtime_values(default_model)
 # Smoke-test the external provider directly (before the DataRobot deployment exists) using the
 # credentials in the environment. verify_llm() strips the datarobot/ prefix so LiteLLM addresses
 # the provider directly. See https://docs.litellm.ai/docs/providers for the model string each

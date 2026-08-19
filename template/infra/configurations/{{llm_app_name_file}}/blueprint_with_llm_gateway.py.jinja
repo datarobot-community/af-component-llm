@@ -54,34 +54,42 @@ REQUIRED_FEATURE_FLAGS = {
 {{llm_app_name}}_application_name: str = "{{llm_app_name}}"
 {{llm_app_name}}_resource_name: str = "[{{llm_app_name}}]"
 # This is the model_id that the DataRobot LLM Gateway expects.
-# You can get a list of these models by running:
+# To list the models available to you:
 """
-import datarobot
-dr_client = datarobot.Client()
-response = dr_client.get("genai/llmgw/catalog/")
-data = response.json()
-print("\n.   - ".join(
-    [
-        f"{model['model']}:{model['llmId']}"
-        for model in data["data"]
-        if model["isActive"]
-    ]
+from infra.lib{{ llm_app_name|lower|replace('-','_')}} import fetch_gateway_catalog
+print("\n".join(
+    f"{model['model']}:{model['llmId']}"
+    for model in fetch_gateway_catalog()
+    if model["isActive"]
 ))
 """
 default_model: str = ensure_datarobot_prefix(
     os.environ.get("{{llm_app_name|upper}}_DEFAULT_MODEL", "datarobot/azure/gpt-5-mini-2025-08-07")
-)
-default_llm_id: str = os.environ.get(
-    "{{llm_app_name|upper}}_DEFAULT_LLM_ID",
-    "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
 )
 # Verify everything is configured properly for this configuration option.
 validate_feature_flags(REQUIRED_FEATURE_FLAGS)
 
 # This does a quick check that validates the selected model is available
 # by checking the LLM Gateway. If it isn't, it will raise an error
-# with the list of models that are available and active.
-verify_llm_gateway_model_availability(default_model)
+# with the list of models that are available and active. The returned catalog entry is
+# the only place the LiteLLM model string and the DataRobot LLM id are joined, so the
+# Playground LLM id comes from it rather than a second environment variable that would
+# drift out of step with the selected model.
+catalog_entry = verify_llm_gateway_model_availability(default_model)
+default_llm_id: str = catalog_entry["llmId"]
+
+# {{llm_app_name|upper}}_DEFAULT_LLM_ID has no effect here: this configuration serves the model
+# named by {{llm_app_name|upper}}_DEFAULT_MODEL through the gateway, and the catalog is what
+# maps that model to its LLM id. Honouring a separate value is what silently pinned blueprints
+# to a different model than the one selected.
+if (stale_llm_id := os.environ.get("{{llm_app_name|upper}}_DEFAULT_LLM_ID")) and (
+    stale_llm_id != default_llm_id
+):
+    pulumi.warn(
+        f"Ignoring {{llm_app_name|upper}}_DEFAULT_LLM_ID '{stale_llm_id}': the LLM Gateway "
+        f"catalog maps {{llm_app_name|upper}}_DEFAULT_MODEL '{default_model}' to "
+        f"'{default_llm_id}'. Unset {{llm_app_name|upper}}_DEFAULT_LLM_ID to silence this."
+    )
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available

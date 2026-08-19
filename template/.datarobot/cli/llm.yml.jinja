@@ -100,6 +100,30 @@ external_llm:
     type: string
     optional: false
     help: "Enter the external LLM model in provider/model form (e.g., azure/gpt-5-mini, nebius/moonshotai/Kimi-K2.7-Code, bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0). The template will automatically prepend /datarobot/."
+  - env: {{llm_app_name|upper}}_DEFAULT_LLM_ID
+    type: string
+    optional: false
+    help: >
+      Enter the DataRobot LLM ID matching your provider (e.g., azure-openai-gpt-5-mini).
+
+
+      This is a DataRobot identifier, not a LiteLLM model string, and it is separate from the
+      model above: your credentials point at your own endpoint, while this selects which
+      provider integration DataRobot uses. It cannot be derived, because an external endpoint
+      has no LLM Gateway catalog entry.
+
+
+      Pick the ID for your provider family: azure-openai-* for Azure OpenAI, amazon-* for
+      Bedrock, anthropic-1p-* for Anthropic, google-* for VertexAI, togetherai-* for TogetherAI.
+
+
+      For an OpenAI-compatible endpoint (Nebius, Groq, xAI, DeepSeek, self-hosted vLLM, ...)
+      use an azure-openai-* ID: it selects the OpenAI dialect, and the Azure-only routing
+      parameters are not sent for these providers.
+  - env: {{llm_app_name|upper}}_DEFAULT_LLM_NAME
+    type: string
+    optional: true
+    help: "Optional display name for the LLM shown in the DataRobot UI (e.g., Azure OpenAI GPT-5 Mini). Defaults to the LLM ID."
   - env: USE_DATAROBOT_LLM_GATEWAY
     type: string
     default: "0"

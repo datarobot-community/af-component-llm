@@ -26,6 +26,7 @@ from pathlib import Path
 import datarobot
 import pulumi
 import pulumi_datarobot
+from datarobot.utils.pagination import unpaginate
 from datarobot_pulumi_utils.common.feature_flags import (
     FeatureFlagSet,
     eval_feature_flag_statuses,
@@ -276,8 +277,15 @@ def get_runtime_values(
         provider = model_id.split("-")[0]
     else:
         provider = model_id
-    # Map common aliases to their canonical provider names
-    provider_aliases = {"amazon": "bedrock", "google": "vertex_ai"}
+    # Map common aliases to their canonical provider names. The gateway catalog spells
+    # TogetherAI's model prefix "together_ai"; without that alias the generic
+    # OpenAI-compatible fallback below would claim it and ask for OPENAI_API_* instead of
+    # TOGETHERAI_API_KEY.
+    provider_aliases = {
+        "amazon": "bedrock",
+        "google": "vertex_ai",
+        "together_ai": "togetherai",
+    }
     provider = provider_aliases.get(provider, provider)
     # Any provider without explicit handling (nebius, groq, xai, deepseek, ...) is treated as a
     # generic OpenAI-compatible endpoint: api_base + api_key, no Azure-only deployment_id.
@@ -336,20 +344,42 @@ def validate_feature_flags(flags: FeatureFlagSet) -> None:
         raise pulumi.RunError("Please correct feature flag settings and run again.")
 
 
-def verify_llm_gateway_model_availability(model_id: str) -> None:
+def fetch_gateway_catalog() -> list[dict]:
+    """Return every entry in the LLM Gateway catalog.
+
+    ``unpaginate`` yields *raw* server data, which is what we want over the typed
+    ``LLMGatewayCatalog`` client: entries keep their camelCase keys, rows are not
+    schema-validated (a cluster predating a field this component never reads would fail
+    validation), and it exists at the ``datarobot>=3.8.2`` floor that af-component-base
+    declares -- ``LLMGatewayCatalog`` only arrived in 3.9.0.
     """
-    Validate the model is in the catalog
+    dr_client = datarobot.Client()
+    return list(unpaginate("genai/llmgw/catalog/", None, dr_client))
+
+
+def verify_llm_gateway_model_availability(model_id: str) -> dict:
+    """
+    Validate the model is in the catalog and return its catalog entry.
+
+    The returned entry carries ``llmId``, ``provider`` and ``name`` alongside ``model``.
+    That row is the only place the LiteLLM model string and the DataRobot LLM id are joined,
+    and neither can be computed from the other (``azure/gpt-35-turbo`` maps to
+    ``azure-openai-gpt-3.5-turbo``, ``bedrock/amazon.nova-lite-v1:0`` to
+    ``amazon-nova-lite``). The gateway configurations take the Playground LLM id from here
+    rather than from a second environment variable that drifts out of step with the model.
+
+    Only the ``USE_DATAROBOT_LLM_GATEWAY=1`` configurations call this. An external LLM is
+    served by your own provider credentials and has no catalog row, so its Playground LLM id
+    is a separate input -- see ``blueprint_with_external_llm.py``.
     """
     model_id = model_id.removeprefix("datarobot/")
-    dr_client = datarobot.Client()
-    response = dr_client.get("genai/llmgw/catalog/")
-    data = response.json()
+    catalog = fetch_gateway_catalog()
     active_models_display = "\n.   - ".join(
-        [model["model"] for model in data["data"] if model["isActive"]]
+        [model["model"] for model in catalog if model["isActive"]]
     )
     matched_models = [
         model
-        for model in data["data"]
+        for model in catalog
         if (model["model"] == model_id or model["llmId"] == model_id)
     ]
     if not matched_models:
@@ -384,6 +414,17 @@ def verify_llm_gateway_model_availability(model_id: str) -> None:
         raise ValueError(
             f"Model '{model_id}' is not active or is retired. Available models: {active_models_display}"
         )
+    # Some active gateway models expose only LiteLLM's /responses route, not
+    # /chat/completions, which is the one this component calls. Without this check such a
+    # model passes validation and then fails inside LiteLLM with an error that never
+    # mentions the real cause. Absent field (before availableLitellmEndpoints was added) means assume supported.
+    litellm_endpoints = matched_models[0].get("availableLitellmEndpoints") or {}
+    if not litellm_endpoints.get("supportsChatCompletions", True):
+        raise ValueError(
+            f"Model '{model_id}' does not support the chat completions endpoint that this "
+            f"component uses. Available models: {active_models_display}"
+        )
+    return matched_models[0]
 
 
 def verify_llm(
