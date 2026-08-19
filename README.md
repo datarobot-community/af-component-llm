@@ -210,13 +210,13 @@ The following are common issues you may encounter when setting up or using this 
 A YAML syntax error in `copier-module.yaml` (for example, a double closing quote on `short_description`) prevents the generator from running. Open the file and verify all quoted strings are properly terminated.
 
 **"Model not found in LLM Gateway catalog"**
-Check that `LLM_NAME_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-5-mini-2025-08-07`) and that the model is active. Call `verify_llm_gateway_model_availability()` from the library module to list available models.
+Check that `LLM_NAME_DEFAULT_MODEL` is set to a valid model ID (for example `datarobot/azure/gpt-5-mini-2025-08-07`) and that the model is active. Call `verify_llm_gateway_model_availability()` from `datarobot_pulumi_utils.common.llm_validation` to list available models.
 
 **"Feature flags required but not enabled"**
 Some configuration strategies require DataRobot platform feature flags (`MLOPS`, `TEXT_GENERATION`, and others). Contact DataRobot support to have the required flags enabled on your account.
 
 **"Credential validation failed" for external providers**
-Verify that the environment variables for your chosen provider are set correctly. The required variables differ per provider. The `ProviderCredential` class in the generated library module lists the exact variable names.
+Verify that the environment variables for your chosen provider are set correctly. The required variables differ per provider. The `ProviderCredential` class in `datarobot_pulumi_utils.pulumi.llm_credentials` lists the exact variable names.
 
 **Windows file path issues during template rendering**
 Run `task validate-windows-compatibility` to scan for template file names containing characters illegal on Windows (`< > : " | ? *`). The Jinja variable substitution in file names is designed to avoid these, but verify after adding new template files.

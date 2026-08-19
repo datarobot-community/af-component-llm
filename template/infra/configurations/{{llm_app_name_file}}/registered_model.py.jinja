@@ -23,17 +23,17 @@ import os
 import datarobot as dr
 import pulumi
 import pulumi_datarobot as datarobot
+from datarobot_pulumi_utils.common.feature_flags import check_feature_flag_set
+from datarobot_pulumi_utils.common.llm_validation import verify_llm
 from datarobot_pulumi_utils.pulumi import export
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
-
-from . import use_case
-from .lib{{ llm_app_name|lower|replace('-','_')}} import (
+from datarobot_pulumi_utils.schema.llms import (
     DEPLOYED_LLM_PLACEHOLDER_MODEL,
     ensure_datarobot_prefix,
-    validate_feature_flags,
-    verify_llm,
 )
+
+from . import use_case
 
 __all__ = [
     "app_runtime_parameters",
@@ -63,7 +63,7 @@ default_model: str = ensure_datarobot_prefix(
 )
 
 # Verify the feature flags are available
-validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+check_feature_flag_set(REQUIRED_FEATURE_FLAGS)
 
 playground = datarobot.Playground(
     use_case_id=use_case.id,
