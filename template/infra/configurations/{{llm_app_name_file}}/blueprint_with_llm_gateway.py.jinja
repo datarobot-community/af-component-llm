@@ -23,18 +23,18 @@ import os
 import datarobot as dr
 import pulumi
 import pulumi_datarobot as datarobot
-from datarobot_pulumi_utils.pulumi import export
-from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
-from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
-
-from . import use_case
-from .lib{{ llm_app_name|lower|replace('-','_')}} import (
-    ensure_datarobot_prefix,
-    get_blueprint_runtime_parameters,
-    validate_feature_flags,
+from datarobot_pulumi_utils.common.feature_flags import check_feature_flag_set
+from datarobot_pulumi_utils.common.llm_validation import (
     verify_llm,
     verify_llm_gateway_model_availability,
 )
+from datarobot_pulumi_utils.pulumi import export
+from datarobot_pulumi_utils.pulumi.llm_blueprint import get_blueprint_runtime_parameters
+from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
+from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
+from datarobot_pulumi_utils.schema.llms import ensure_datarobot_prefix
+
+from . import use_case
 
 __all__ = [
     "app_runtime_parameters",
@@ -76,12 +76,16 @@ default_llm_id: str = os.environ.get(
     "azure-openai-gpt-5-mini",  # External LLM ID from the Playground
 )
 # Verify everything is configured properly for this configuration option.
-validate_feature_flags(REQUIRED_FEATURE_FLAGS)
+check_feature_flag_set(REQUIRED_FEATURE_FLAGS)
 
 # This does a quick check that validates the selected model is available
 # by checking the LLM Gateway. If it isn't, it will raise an error
 # with the list of models that are available and active.
-verify_llm_gateway_model_availability(default_model)
+verify_llm_gateway_model_availability(
+    default_model,
+    model_env_var="{{llm_app_name|upper}}_DEFAULT_MODEL",
+    config_location="infra/configurations/{{llm_app_name|lower|replace('-','_')}}/",
+)
 
 # LiteLLM support DataRobot as a provider, so this validates
 # everything is working and the default LLM you've chosen is available

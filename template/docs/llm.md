@@ -327,7 +327,7 @@ INFRA_ENABLE_LLM=registered_model.py
 
 ### Editing the configuration directly
 
-In addition to the `.env` file changes, you can also edit the respective configuration file to make additional changes, such as the default LLM, temperature, top_p, etc.
+In addition to the `.env` file changes, you can also edit the respective configuration file to make additional changes, such as the default LLM, temperature, top_p, etc. The feature-flag, credential, and LLM-verification helpers each configuration module imports come from the [`datarobot-pulumi-utils`](https://github.com/datarobot-oss/datarobot-pulumi-utils) package rather than a generated module in your project.
 
 ## Common configuration
 

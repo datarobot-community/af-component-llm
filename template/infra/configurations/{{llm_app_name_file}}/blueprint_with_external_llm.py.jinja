@@ -23,18 +23,16 @@ import os
 import datarobot as dr
 import pulumi
 import pulumi_datarobot as datarobot
+from datarobot_pulumi_utils.common.feature_flags import check_feature_flag_set
+from datarobot_pulumi_utils.common.llm_validation import verify_llm
 from datarobot_pulumi_utils.pulumi import export
+from datarobot_pulumi_utils.pulumi.llm_blueprint import get_blueprint_runtime_parameters
+from datarobot_pulumi_utils.pulumi.llm_credentials import get_runtime_values
 from datarobot_pulumi_utils.pulumi.stack import PROJECT_NAME
 from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
+from datarobot_pulumi_utils.schema.llms import ensure_datarobot_prefix
 
 from . import use_case
-from .lib{{ llm_app_name|lower|replace('-','_')}} import (
-    ensure_datarobot_prefix,
-    get_blueprint_runtime_parameters,
-    get_runtime_values,
-    validate_feature_flags,
-    verify_llm,
-)
 
 __all__ = [
     "app_runtime_parameters",
@@ -65,8 +63,13 @@ default_llm_friendly_name: str = os.environ.get(
     "Azure OpenAI GPT-5 Mini",  # Shown in the Web UI
 )
 
-validate_feature_flags(REQUIRED_FEATURE_FLAGS)
-llm_credential_runtime_params = get_runtime_values(default_llm_id)
+check_feature_flag_set(REQUIRED_FEATURE_FLAGS)
+# get_runtime_values() must run before verify_llm() below: it hydrates this provider's
+# credential env vars (e.g. cross-populating AZURE_API_KEY from OPENAI_API_KEY) as a side
+# effect, and verify_llm() relies on that hydration having already happened.
+llm_credential_runtime_params = get_runtime_values(
+    default_llm_id, resource_suffix={{llm_app_name}}_resource_name
+)
 # Smoke-test the external provider directly (before the DataRobot deployment exists) using the
 # credentials in the environment. verify_llm() strips the datarobot/ prefix so LiteLLM addresses
 # the provider directly. See https://docs.litellm.ai/docs/providers for the model string each
