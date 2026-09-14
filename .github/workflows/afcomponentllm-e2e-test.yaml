@@ -1,26 +1,28 @@
 ---
 name: af-component-llm E2E
+# ─────────────────────────────────────────────────────────────────────────────
+# NO PATH FILTER, DELIBERATELY. This used to fire only on `template/**`,
+# `tests/**`, the Taskfile, and the two dependency files. It now runs on every
+# push and every pull request to main.
+#
+# Two reasons. The repo is small and its traffic is low, so the runner cost of
+# the filter was never really being saved. And the suite that actually proves
+# this component works is the one that deploys it, so a change that looked
+# unrelated to the filter but broke a render reached main unverified. That has
+# happened here more than once.
+#
+# It also makes `E2E gate` below listable. A skipped job reports NO status at
+# all, which is why a path-filtered workflow can never be a required check or
+# an automerge `expected_checks` entry: the pull request waits forever on a
+# context that will never arrive. With the filter gone, the gate job reports on
+# every pull request, so `.github/automerge.yaml` can require a green E2E
+# before a Dependabot bump merges unattended.
+# ─────────────────────────────────────────────────────────────────────────────
 on:
   push:
     branches: ["main"]
-    paths:
-      - "template/**"
-      - "!template/docs/**"
-      - "tests/**"
-      - "Taskfile.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/afcomponentllm-e2e-test.yaml"
   pull_request:
     branches: ["main"]
-    paths:
-      - "template/**"
-      - "!template/docs/**"
-      - "tests/**"
-      - "Taskfile.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/afcomponentllm-e2e-test.yaml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   # Never cancel mid-deploy — risks orphaned DataRobot resources.
@@ -124,3 +126,56 @@ jobs:
             e2e-${{ matrix.configuration }}.log
             ./.rendered/**/*.log
           if-no-files-found: warn
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # The one context anything else is allowed to depend on.
+  #
+  # `E2E / <configuration>` is five separate check runs whose names change
+  # whenever the matrix does, so nothing outside this file should name them.
+  # This job collapses all five into one stable context, and because it is
+  # `if: always()` it reports on every pull request rather than only on the
+  # ones where the matrix ran. That is what makes it listable in
+  # `.github/automerge.yaml` and eligible to be a required status check.
+  #
+  # `needs.e2e.result` is the AGGREGATE across the whole matrix: `success` only
+  # when every leg succeeded, `failure` if any leg failed, `skipped` when the
+  # matrix job did not run at all.
+  #
+  # Skipped counts as a pass, and that is not laziness. The `e2e` job skips on
+  # exactly one condition: a pull request from a fork, where the integration
+  # secrets are deliberately withheld. Failing here would turn every fork
+  # contribution permanently red for a suite it is not allowed to run. Those
+  # pull requests are reviewed by a human by definition, and the same commits
+  # run the full suite on the push to main after the merge.
+  #
+  # Cancelled is a failure. A cancelled deploy is the case most likely to have
+  # left DataRobot resources behind, so it must never read as green.
+  # ───────────────────────────────────────────────────────────────────────────
+  e2e-gate:
+    name: "E2E gate"
+    if: always()
+    needs: [e2e]
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Report the aggregate E2E result
+        shell: bash
+        env:
+          E2E_RESULT: ${{ needs.e2e.result }}
+        run: |
+          set -euo pipefail
+          echo "E2E matrix result: ${E2E_RESULT}"
+          case "${E2E_RESULT}" in
+            success)
+              echo "All E2E configurations passed." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            skipped)
+              echo "E2E did not run (fork pull request; integration secrets withheld)." \
+                >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "::error::E2E matrix reported '${E2E_RESULT}'."
+              echo "E2E matrix reported \`${E2E_RESULT}\`. See the per-configuration jobs." \
+                >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
