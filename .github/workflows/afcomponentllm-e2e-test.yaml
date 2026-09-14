@@ -1,27 +1,5 @@
 ---
 name: af-component-llm E2E
-# ─────────────────────────────────────────────────────────────────────────────
-# NO PATH FILTER, DELIBERATELY. This used to fire only on `template/**`,
-# `tests/**`, the Taskfile, and the two dependency files. It now runs on every
-# push and every pull request to main.
-#
-# Two reasons. The repo is small and its traffic is low, so the runner cost of
-# the filter was never really being saved. And the suite that actually proves
-# this component works is the one that deploys it, so a change that looked
-# unrelated to the filter but broke a render reached main unverified. That has
-# happened here more than once.
-#
-# It also makes `E2E gate` below listable. A skipped job reports NO status at
-# all, which is why a path-filtered workflow can never be a required check or
-# an automerge `expected_checks` entry: the pull request waits forever on a
-# context that will never arrive. With the filter gone, the gate job reports on
-# every pull request, so `.github/automerge.yaml` can list it.
-#
-# It is listed there but is not yet PROVING anything on the pull requests that
-# policy merges, because the matrix is currently skipped on Dependabot. Read
-# the `if:` on the `e2e` job for why, and for the one settings change that
-# undoes it.
-# ─────────────────────────────────────────────────────────────────────────────
 on:
   push:
     branches: ["main"]
@@ -49,13 +27,7 @@ jobs:
     # deploying anything. That is runner time spent proving nothing, and it
     # turns `E2E gate` red on every weekly bump, which is a context
     # `.github/automerge.yaml` requires before it will merge one.
-    #
-    # THE DEPENDABOT HALF IS A STOPGAP AND IT HAS A REAL COST: a github-actions
-    # bump now merges unattended with no deploy evidence behind it. Undoing it
-    # is a settings change, not a code change. Mirror the nine secrets into the
-    # Dependabot store (`gh secret set <NAME> --app dependabot`), then delete
-    # the actor check below and Dependabot pull requests deploy for real.
-    #
+    # 
     # `github.actor` rather than `pull_request.user.login`, deliberately. The
     # secret starvation is keyed on who TRIGGERED the run, not on who opened
     # the pull request. So pushing any commit onto a Dependabot branch makes
