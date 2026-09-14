@@ -39,9 +39,19 @@ label: automerge
 # it skips, so listing one wedges every pull request forever. Read the header of
 # that workflow before putting the filter back: doing so silently breaks this.
 #
-# Expect a merge to take the better part of an hour, because the E2E matrix
-# deploys five real configurations against a live DataRobot and this waits for
-# all of them.
+# AND TODAY IT HOLDS THE SLOT RATHER THAN PROVING ANYTHING. The E2E matrix is
+# skipped on Dependabot pull requests, so on exactly the pull requests this
+# policy merges, `E2E gate` reports green without having deployed. That is
+# deliberate and temporary. A Dependabot `pull_request` event cannot read this
+# repo's Actions secrets, so the alternative was a suite failing on empty
+# DataRobot credentials on every weekly bump, which would escalate each one to
+# a human and make this whole policy inert.
+#
+# Restoring the proof is a settings change, not a code change: mirror the nine
+# E2E secrets into the Dependabot secret store and drop the actor check in
+# afcomponentllm-e2e-test.yaml. Until then a merge here takes minutes. After
+# it, expect the better part of an hour, because the matrix deploys five real
+# configurations against a live DataRobot and this waits for all of them.
 #
 # DELIBERATELY ABSENT:
 # - `E2E / <configuration>` — the five matrix legs. Their names change with the

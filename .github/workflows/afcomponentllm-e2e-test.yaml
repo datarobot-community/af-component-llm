@@ -15,8 +15,12 @@ name: af-component-llm E2E
 # all, which is why a path-filtered workflow can never be a required check or
 # an automerge `expected_checks` entry: the pull request waits forever on a
 # context that will never arrive. With the filter gone, the gate job reports on
-# every pull request, so `.github/automerge.yaml` can require a green E2E
-# before a Dependabot bump merges unattended.
+# every pull request, so `.github/automerge.yaml` can list it.
+#
+# It is listed there but is not yet PROVING anything on the pull requests that
+# policy merges, because the matrix is currently skipped on Dependabot. Read
+# the `if:` on the `e2e` job for why, and for the one settings change that
+# undoes it.
 # ─────────────────────────────────────────────────────────────────────────────
 on:
   push:
@@ -32,8 +36,36 @@ permissions:
 jobs:
   e2e:
     name: "E2E / ${{ matrix.configuration }}"
-    # Skip fork PRs so integration secrets are not exposed to untrusted code.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    # ───────────────────────────────────────────────────────────────────────
+    # TWO KINDS OF PULL REQUEST NEVER RUN THIS.
+    #
+    # Fork pull requests, so the integration secrets are not exposed to
+    # untrusted code.
+    #
+    # Dependabot pull requests, because a Dependabot `pull_request` event reads
+    # the Dependabot secret store and never this repo's Actions secrets. All
+    # nine credentials below would arrive as empty strings, so the matrix would
+    # not fail honestly: it would fail against an empty endpoint without
+    # deploying anything. That is runner time spent proving nothing, and it
+    # turns `E2E gate` red on every weekly bump, which is a context
+    # `.github/automerge.yaml` requires before it will merge one.
+    #
+    # THE DEPENDABOT HALF IS A STOPGAP AND IT HAS A REAL COST: a github-actions
+    # bump now merges unattended with no deploy evidence behind it. Undoing it
+    # is a settings change, not a code change. Mirror the nine secrets into the
+    # Dependabot store (`gh secret set <NAME> --app dependabot`), then delete
+    # the actor check below and Dependabot pull requests deploy for real.
+    #
+    # `github.actor` rather than `pull_request.user.login`, deliberately. The
+    # secret starvation is keyed on who TRIGGERED the run, not on who opened
+    # the pull request. So pushing any commit onto a Dependabot branch makes
+    # the actor a human again, the secrets resolve, and the suite runs for
+    # real. That is the escape hatch for reviewing a Python bump today.
+    # ───────────────────────────────────────────────────────────────────────
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.fork == false &&
+      github.actor != 'dependabot[bot]')
     runs-on: "ubuntu-latest"
     timeout-minutes: 75
     strategy:
@@ -142,11 +174,18 @@ jobs:
   # matrix job did not run at all.
   #
   # Skipped counts as a pass, and that is not laziness. The `e2e` job skips on
-  # exactly one condition: a pull request from a fork, where the integration
-  # secrets are deliberately withheld. Failing here would turn every fork
-  # contribution permanently red for a suite it is not allowed to run. Those
-  # pull requests are reviewed by a human by definition, and the same commits
-  # run the full suite on the push to main after the merge.
+  # two conditions, and both of them are cases where the integration secrets
+  # are not available to it: a fork pull request, and a Dependabot pull
+  # request. Failing here would turn those permanently red for a suite they
+  # cannot run, and the same commits run the full matrix on the push to main
+  # after the merge either way.
+  #
+  # The fork half is comfortable, because a fork contribution is reviewed by a
+  # human by definition. The Dependabot half is NOT, because
+  # `.github/automerge.yaml` merges those unattended. There, a skip is the
+  # difference between "E2E proved it still deploys" and "E2E was never asked",
+  # and this job cannot tell the reader which one it is looking at. That trade
+  # is temporary; the `if:` on the `e2e` job above says what undoes it.
   #
   # Cancelled is a failure. A cancelled deploy is the case most likely to have
   # left DataRobot resources behind, so it must never read as green.

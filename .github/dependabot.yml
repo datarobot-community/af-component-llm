@@ -13,8 +13,15 @@
 #                   `datarobot-genai[crewai,langgraph,llamaindex]`, so a bump
 #                   here changes the library the five deploy configurations are
 #                   actually tested against. Labelled `00 - Ready for Review`
-#                   and left for a human. The E2E suite runs on it either way,
-#                   and a green run is evidence, not a decision.
+#                   and left for a human.
+#
+#                   THE E2E SUITE DOES NOT RUN ON THESE TODAY. Dependabot
+#                   cannot read this repo's Actions secrets, so the matrix is
+#                   skipped rather than failed on empty credentials; see the
+#                   `if:` on the `e2e` job in afcomponentllm-e2e-test.yaml. The
+#                   reviewer therefore has no deploy signal by default. Pushing
+#                   any commit onto the Dependabot branch makes the actor a
+#                   human, the secrets resolve, and the suite runs for real.
 #
 # WHY THE PYTHON ECOSYSTEM IS ENABLED HERE AND NOT IN THE SIBLING REPOS.
 # af-component-agent and af-component-evaluation both switch it off, and for a
