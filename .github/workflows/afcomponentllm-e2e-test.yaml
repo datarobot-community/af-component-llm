@@ -60,7 +60,7 @@ jobs:
       image: ghcr.io/astral-sh/uv:python3.11-bookworm
     steps:
       - name: Checkout
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
       - name: Setup caching
         uses: ./.github/actions/setup-caching
         with:
@@ -123,7 +123,7 @@ jobs:
           (cd "$infra" && uv run pulumi stack rm -f -y "$stack") || true
       - name: Upload E2E logs
         if: failure() || cancelled()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-logs-${{ matrix.configuration }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
