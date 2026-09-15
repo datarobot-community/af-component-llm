@@ -3,24 +3,8 @@ name: af-component-llm E2E
 on:
   push:
     branches: ["main"]
-    paths:
-      - "template/**"
-      - "!template/docs/**"
-      - "tests/**"
-      - "Taskfile.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/afcomponentllm-e2e-test.yaml"
   pull_request:
     branches: ["main"]
-    paths:
-      - "template/**"
-      - "!template/docs/**"
-      - "tests/**"
-      - "Taskfile.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/afcomponentllm-e2e-test.yaml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   # Never cancel mid-deploy — risks orphaned DataRobot resources.
@@ -30,8 +14,30 @@ permissions:
 jobs:
   e2e:
     name: "E2E / ${{ matrix.configuration }}"
-    # Skip fork PRs so integration secrets are not exposed to untrusted code.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    # ───────────────────────────────────────────────────────────────────────
+    # TWO KINDS OF PULL REQUEST NEVER RUN THIS.
+    #
+    # Fork pull requests, so the integration secrets are not exposed to
+    # untrusted code.
+    #
+    # Dependabot pull requests, because a Dependabot `pull_request` event reads
+    # the Dependabot secret store and never this repo's Actions secrets. All
+    # nine credentials below would arrive as empty strings, so the matrix would
+    # not fail honestly: it would fail against an empty endpoint without
+    # deploying anything. That is runner time spent proving nothing, and it
+    # turns `E2E gate` red on every weekly bump, which is a context
+    # `.github/automerge.yaml` requires before it will merge one.
+    # 
+    # `github.actor` rather than `pull_request.user.login`, deliberately. The
+    # secret starvation is keyed on who TRIGGERED the run, not on who opened
+    # the pull request. So pushing any commit onto a Dependabot branch makes
+    # the actor a human again, the secrets resolve, and the suite runs for
+    # real. That is the escape hatch for reviewing a Python bump today.
+    # ───────────────────────────────────────────────────────────────────────
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.fork == false &&
+      github.actor != 'dependabot[bot]')
     runs-on: "ubuntu-latest"
     timeout-minutes: 75
     strategy:
@@ -124,3 +130,63 @@ jobs:
             e2e-${{ matrix.configuration }}.log
             ./.rendered/**/*.log
           if-no-files-found: warn
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # The one context anything else is allowed to depend on.
+  #
+  # `E2E / <configuration>` is five separate check runs whose names change
+  # whenever the matrix does, so nothing outside this file should name them.
+  # This job collapses all five into one stable context, and because it is
+  # `if: always()` it reports on every pull request rather than only on the
+  # ones where the matrix ran. That is what makes it listable in
+  # `.github/automerge.yaml` and eligible to be a required status check.
+  #
+  # `needs.e2e.result` is the AGGREGATE across the whole matrix: `success` only
+  # when every leg succeeded, `failure` if any leg failed, `skipped` when the
+  # matrix job did not run at all.
+  #
+  # Skipped counts as a pass, and that is not laziness. The `e2e` job skips on
+  # two conditions, and both of them are cases where the integration secrets
+  # are not available to it: a fork pull request, and a Dependabot pull
+  # request. Failing here would turn those permanently red for a suite they
+  # cannot run, and the same commits run the full matrix on the push to main
+  # after the merge either way.
+  #
+  # The fork half is comfortable, because a fork contribution is reviewed by a
+  # human by definition. The Dependabot half is NOT, because
+  # `.github/automerge.yaml` merges those unattended. There, a skip is the
+  # difference between "E2E proved it still deploys" and "E2E was never asked",
+  # and this job cannot tell the reader which one it is looking at. That trade
+  # is temporary; the `if:` on the `e2e` job above says what undoes it.
+  #
+  # Cancelled is a failure. A cancelled deploy is the case most likely to have
+  # left DataRobot resources behind, so it must never read as green.
+  # ───────────────────────────────────────────────────────────────────────────
+  e2e-gate:
+    name: "E2E gate"
+    if: always()
+    needs: [e2e]
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Report the aggregate E2E result
+        shell: bash
+        env:
+          E2E_RESULT: ${{ needs.e2e.result }}
+        run: |
+          set -euo pipefail
+          echo "E2E matrix result: ${E2E_RESULT}"
+          case "${E2E_RESULT}" in
+            success)
+              echo "All E2E configurations passed." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            skipped)
+              echo "E2E did not run (fork pull request; integration secrets withheld)." \
+                >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            *)
+              echo "::error::E2E matrix reported '${E2E_RESULT}'."
+              echo "E2E matrix reported \`${E2E_RESULT}\`. See the per-configuration jobs." \
+                >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac

@@ -1,0 +1,131 @@
+---
+# This file configures Dependabot for the repository.
+#
+# TWO ECOSYSTEMS, AND THEY ARE TREATED DIFFERENTLY. That split is the whole
+# design of this file, so read it before adding a third.
+#
+#   github-actions  mechanical. A pinned action moves, nothing about this
+#                   component changes. Labelled `automerge` and merged
+#                   unattended once every check in .github/automerge.yaml is
+#                   green.
+#
+#   uv (Python)     NOT mechanical. The root's `e2e` extra resolves
+#                   `datarobot-genai[crewai,langgraph,llamaindex]`, so a bump
+#                   here changes the library the five deploy configurations are
+#                   actually tested against. Labelled `00 - Ready for Review`
+#                   and left for a human.
+#
+#                   THE E2E SUITE DOES NOT RUN ON THESE TODAY. Dependabot
+#                   cannot read this repo's Actions secrets, so the matrix is
+#                   skipped rather than failed on empty credentials; see the
+#                   `if:` on the `e2e` job in afcomponentllm-e2e-test.yaml. The
+#                   reviewer therefore has no deploy signal by default. Pushing
+#                   any commit onto the Dependabot branch makes the actor a
+#                   human, the secrets resolve, and the suite runs for real.
+#
+# WHY THE PYTHON ECOSYSTEM IS ENABLED HERE AND NOT IN THE SIBLING REPOS.
+# af-component-agent and af-component-evaluation both switch it off, and for a
+# good reason that does not apply here: their dependency manifests live inside
+# the copier template at a jinja-templated path Dependabot cannot resolve, so
+# enabling it there produces pull requests that have to be closed by hand.
+#
+# This template ships infra `.py.jinja` files and no manifest at all. The only
+# `pyproject.toml` in the repo is at the root, it is the E2E harness rather than
+# anything a customer renders, and Dependabot resolves it fine.
+#
+# HOW THIS COEXISTS WITH cve-sync. They write to the same two files and do not
+# collide, because they own different keys. cve-sync owns `[tool.uv]`
+# `override-dependencies` and `constraint-dependencies`, which is the CVE floor
+# residue. Dependabot owns `[project]` and `[project.optional-dependencies]`,
+# which is what this repo actually asks for. Both re-lock `uv.lock`. If their
+# branches are open at the same time, whichever merges second rebases: the
+# resync replaces its branch in place on its next scheduled run, and Dependabot
+# rebases its own.
+#
+# The one rule that outranks both: never `uv lock --upgrade` by hand. Version
+# bumps come from a Dependabot pull request or a cve-sync floor, and a free
+# re-resolve breaks the agentic stack.
+version: 2
+updates:
+  # ───────────────────────────────────────────────────────────────────────────
+  # GitHub Actions. Automerged.
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    # "/" covers `.github/workflows`. The glob additionally covers the composite
+    # actions under `.github/actions/*`, which Dependabot does not look at
+    # otherwise: `setup-caching` pins `actions/cache`, and
+    # `render-copier-instance` pins its own.
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: "weekly"
+    # Everything lands in ONE pull request. Without a group, Dependabot opens a
+    # separate PR per action per directory, which for this repo means up to a
+    # dozen for a single `datarobot-oss/github-actions` release. The wildcard
+    # pattern plus all three update-types keeps majors in that same PR instead
+    # of splitting them out on their own.
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+    open-pull-requests-limit: 1
+    # `automerge` opts these PRs into unattended approve-and-merge; see
+    # .github/automerge.yaml for what has to be green first.
+    #
+    # EVERY label here must already exist in the repo. Dependabot silently drops
+    # a label it cannot find: no warning, no label on the PR, and automerge then
+    # finds no candidates and does nothing, forever, with nothing saying why.
+    # `automerge` exists; `dependencies` and `github-actions` have to be created
+    # before this file does anything useful.
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automerge"
+    commit-message:
+      prefix: "ci"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Python, via uv. Reviewed by a human.
+  # ───────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # One pull request for the lot, same reasoning as above. The realistic
+    # content is a `datarobot-genai` bump plus whatever it drags with it, and
+    # reviewing that as one resolution is easier than as five.
+    groups:
+      python:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+    open-pull-requests-limit: 1
+    # NO `automerge` LABEL, deliberately. See the header.
+    #
+    # `00 - Ready for Review` is the same label a human applies by hand, so
+    # these PRs enter the normal review queue rather than sitting in a state
+    # nothing watches. It also means the 30-minute open-PR digest in
+    # workflow-pr-automation.yaml lists them.
+    #
+    # The instant Slack ping that label normally fires does NOT fire here, and
+    # that is expected rather than broken: a Dependabot `pull_request` event can
+    # read Dependabot secrets only, never this repo's Actions secrets, so
+    # SLACK_WEBHOOK_URL arrives empty. The upstream workflow skips the Slack
+    # step on an empty webhook instead of failing, so the PR stays green and the
+    # cron digest is what surfaces it. Add SLACK_WEBHOOK_URL as a *Dependabot*
+    # secret if you want the instant ping too.
+    labels:
+      - "dependencies"
+      - "00 - Ready for Review"
+    commit-message:
+      prefix: "deps"

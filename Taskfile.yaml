@@ -2,6 +2,20 @@ version: '3'
 dotenv: ['.env']
 env:
   RENDER_DIR: .rendered
+
+includes:
+  # Vendored from datarobot-oss/cve-sync (taskfiles/cve-sync.yml). Only the
+  # taskfile is vendored; the tool and the CVE policy are fetched at run time, so
+  # this file does not need updating when a floor changes. The resync job in
+  # .github/workflows/cve-sync.yml rewrites it on every run, so do not hand-edit
+  # it. Not flattened, so the tasks are namespaced as `task cve-sync:<name>`.
+  #
+  # This repo has exactly one resolution root (the repo itself). The copier
+  # template here ships infra .py.jinja files and no dependency manifest, so
+  # there is nothing template-shaped for cve-sync to splice into, and no
+  # `check-templates` surface the way af-component-agent has.
+  cve-sync:
+    taskfile: .taskfiles/cve-sync.yml
 vars:
   E2E_STACK_PREFIX:
     sh: |
