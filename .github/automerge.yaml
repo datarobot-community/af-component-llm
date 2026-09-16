@@ -15,11 +15,36 @@
 
 version: 1
 
-# Only Dependabot for now. cve-sync opens its PRs as the `cve-sync` App, and it
-# will be added here once this has run unattended for a while: one bot at a
-# time, so a surprise has an obvious source.
+# ─────────────────────────────────────────────────────────────────────────────
+# Both bots now. Dependabot landed first and ran unattended for a while on its
+# own, which was the point of doing them one at a time.
+#
+# Spelled with the `[bot]` suffix, exactly. dr-auto-merge compares authors with
+# no normalization, so `cve-sync` on its own matches nothing, and the failure is
+# SILENT: a PR whose author is not on this list is not a candidate at all, so it
+# gets no comment and no hand-over. The only trace is one row in a job summary
+# in a scheduled run.
+#
+# The two bots are not interchangeable, and the difference runs through the rest
+# of this file:
+#
+#   dependabot[bot]  bumps pinned action SHAs under .github/. Cannot read this
+#                    repo's Actions secrets, so `E2E gate` is a formality on its
+#                    PRs (see below).
+#   cve-sync[bot]    rewrites pyproject.toml and uv.lock against the shared CVE
+#                    floors. Opens its PRs as an ordinary GitHub App, so its
+#                    events DO read this repo's Actions secrets and the full E2E
+#                    matrix really runs.
+#
+# cve-sync decides for itself whether a resync is boring enough to carry the
+# `automerge` label at all, and it reads the uv.lock diff to do it: a major
+# version crossing, a package entering or leaving the resolution, or a removed
+# ceiling all get `00 - Ready for Review` instead, before anything here sees the
+# PR. That check is upstream of this policy, not a substitute for it.
+# ─────────────────────────────────────────────────────────────────────────────
 allowed_authors:
   - dependabot[bot]
+  - cve-sync[bot]
 
 label: automerge
 
@@ -39,19 +64,32 @@ label: automerge
 # it skips, so listing one wedges every pull request forever. Read the header of
 # that workflow before putting the filter back: doing so silently breaks this.
 #
-# AND TODAY IT HOLDS THE SLOT RATHER THAN PROVING ANYTHING. The E2E matrix is
-# skipped on Dependabot pull requests, so on exactly the pull requests this
-# policy merges, `E2E gate` reports green without having deployed. That is
-# deliberate and temporary. A Dependabot `pull_request` event cannot read this
-# repo's Actions secrets, so the alternative was a suite failing on empty
-# DataRobot credentials on every weekly bump, which would escalate each one to
-# a human and make this whole policy inert.
+# ON DEPENDABOT PULL REQUESTS IT HOLDS THE SLOT RATHER THAN PROVING ANYTHING.
+# The E2E matrix is skipped there, so `E2E gate` reports green without having
+# deployed. That is deliberate and temporary. A Dependabot `pull_request` event
+# cannot read this repo's Actions secrets, so the alternative was a suite
+# failing on empty DataRobot credentials on every weekly bump, which would
+# escalate each one to a human and make this whole policy inert.
 #
 # Restoring the proof is a settings change, not a code change: mirror the nine
 # E2E secrets into the Dependabot secret store and drop the actor check in
-# afcomponentllm-e2e-test.yaml. Until then a merge here takes minutes. After
-# it, expect the better part of an hour, because the matrix deploys five real
-# configurations against a live DataRobot and this waits for all of them.
+# afcomponentllm-e2e-test.yaml.
+#
+# ON CVE-SYNC PULL REQUESTS IT IS THE REAL VERDICT, AND THAT IS THE WHOLE
+# REASON cve-sync IS WORTH ENROLLING HERE. The skip in
+# afcomponentllm-e2e-test.yaml keys on `github.actor != 'dependabot[bot]'` and
+# nothing else, and cve-sync opens its PRs as an ordinary GitHub App whose
+# events read this repo's Actions secrets normally. So the matrix deploys five
+# real configurations against a live DataRobot, and this waits for all of them.
+#
+# That is also the cost: expect a cve-sync merge to take the better part of an
+# hour, where a Dependabot one takes minutes. The polling caller absorbs that
+# for free, which is why it is a cron rather than a `pull_request` trigger.
+#
+# It matters most here because of what cve-sync changes. A resync moves the
+# resolved dependency graph, and `E2E gate` is the only check in this repo that
+# exercises the agentic stack end to end. The Test Infra legs below prove the
+# Pulumi shape, not that datarobot-genai still works after a floor moved.
 #
 # DELIBERATELY ABSENT:
 # - `E2E / <configuration>` — the five matrix legs. Their names change with the
@@ -76,27 +114,51 @@ block_on_any_failure: true
 
 settle_seconds: 300
 
-# A grouped github-actions bump touches one file per workflow that pins an
-# action. That is 10 workflows plus the two composite actions under
-# `.github/actions/`, so 12 is the realistic ceiling today and 16 leaves room
-# for a few more. Anything much larger is not the PR we think it is.
+# Sized for the larger of the two bots, which is Dependabot. A grouped
+# github-actions bump touches one file per workflow that pins an action: 10
+# workflows plus the two composite actions under `.github/actions/`, so 12 is
+# the realistic ceiling today and 16 leaves room for a few more.
+#
+# A cve-sync resync is nowhere near it. Three files is the most it can produce
+# here, because this template ships no `pyproject.toml.jinja` and no pre-baked
+# lock artifacts: there is exactly one resolution root, this repo's own.
 max_changed_files: 16
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Only the github-actions ecosystem is automerged here, so a PR touching
-# anything outside `.github/` is by definition not the PR this policy is for.
+# The union of what the two bots touch. This list is flat: dr-auto-merge has no
+# per-author path rules, so anything either bot needs is allowed for both.
 #
-# `pyproject.toml` and `uv.lock` are NOT listed, and that is load-bearing rather
-# than an oversight. Dependabot's Python PRs are labelled `00 - Ready for
-# Review` instead of `automerge`, so they never reach this policy in the normal
-# course. If somebody hand-labels one `automerge` anyway, this list refuses it
-# and escalates rather than merging a datarobot-genai bump unattended.
+# Dependabot's half is the `.github/` entries. Only the github-actions ecosystem
+# is automerged from that side, so a PR touching anything else is by definition
+# not the PR those entries are for. `.github/actions/**` matters because the
+# composite actions pin their own dependencies (setup-caching pins
+# `actions/cache`) and Dependabot bumps them in the same grouped PR.
 #
-# `.github/actions/**` matters: the composite actions pin their own
-# dependencies (setup-caching pins `actions/cache`) and Dependabot bumps them in
-# the same grouped PR.
+# cve-sync's half is the three at the top. A resync rewrites this repo's own
+# root manifest and lock, and refreshes the vendored command file it generates
+# at `.taskfiles/cve-sync.yml`. That third one is easy to forget because most
+# resyncs do not touch it: it moves only when the upstream command definition
+# does, and a run that leaves it out still commits the other two. Omitting it
+# here would work fine until the day it did not.
+#
+# WHAT ADDING `pyproject.toml` AND `uv.lock` GIVES UP. This list used to refuse
+# them on purpose, as a backstop: Dependabot's Python PRs are labelled
+# `00 - Ready for Review` rather than `automerge`, so they never reach this
+# policy on their own, and the path list caught the case where somebody
+# hand-labelled one anyway. That backstop is gone, and it cannot be kept,
+# because cve-sync edits exactly those two files.
+#
+# What replaces it is narrower but not nothing. Reaching this policy with a
+# Dependabot Python bump now takes a deliberate human act (opening the PR and
+# applying a label Dependabot did not), and `E2E gate` is a real check on any
+# PR a human has touched, because pushing or labelling as a human is what makes
+# the secrets resolve. The unattended path is still closed; the hand-labelled
+# one now gets tested rather than refused.
 # ─────────────────────────────────────────────────────────────────────────────
 allowed_paths:
+  - "pyproject.toml"
+  - "uv.lock"
+  - ".taskfiles/cve-sync.yml"
   - ".github/workflows/**"
   - ".github/actions/**"
   - ".github/dependabot.yml"
