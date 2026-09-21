@@ -213,6 +213,6 @@ custom_model_runtime_parameters = [
 # app_runtime_parameters above.
 pulumi.export("Deployment ID " + {{llm_app_name}}_resource_name, llm_deployment.id)
 export("{{llm_app_name|upper}}_DEPLOYMENT_ID", llm_deployment.id)
-export("USE_DATAROBOT_LLM_GATEWAY", "0")
+export("{{llm_app_name|upper}}_USE_DATAROBOT_LLM_GATEWAY", "0")
 export("{{llm_app_name|upper}}_DEFAULT_MODEL", default_model)
 export("{{llm_app_name|upper}}_DEFAULT_MODEL_FRIENDLY_NAME", proxy_llm_registered_model.name)
