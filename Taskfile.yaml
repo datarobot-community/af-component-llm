@@ -232,7 +232,7 @@ tasks:
   test-e2e:gateway-direct:
     desc: "E2E — LLM Gateway direct (no deployment)"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "1"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "1"
       LLM_DEPLOYMENT_ID: ""
       LLM_NIM_DEPLOYMENT_ID: ""
       NIM_DEPLOYMENT_ID: ""
@@ -244,7 +244,7 @@ tasks:
   test-e2e:blueprint-with-llm-gateway:
     desc: "E2E — blueprint with LLM Gateway deployment"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "1"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "1"
       LLM_DEPLOYMENT_ID: ""
       LLM_NIM_DEPLOYMENT_ID: ""
       NIM_DEPLOYMENT_ID: ""
@@ -256,7 +256,7 @@ tasks:
   test-e2e:deployed-llm:
     desc: "E2E — import existing deployed LLM"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "0"
       LLM_DEFAULT_MODEL: ""
       LLM_NIM_DEPLOYMENT_ID: ""
       NIM_DEPLOYMENT_ID: ""
@@ -268,7 +268,7 @@ tasks:
   test-e2e:blueprint-with-external-llm:
     desc: "E2E — blueprint with external LLM (e.g. Azure OpenAI)"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "0"
       LLM_DEFAULT_MODEL: ""
       LLM_DEPLOYMENT_ID: ""
       LLM_NIM_DEPLOYMENT_ID: ""
@@ -281,7 +281,7 @@ tasks:
   test-e2e:registered-model:
     desc: "E2E — deploy from registered model"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "0"
       LLM_DEFAULT_MODEL: ""
       LLM_DEPLOYMENT_ID: ""
       LLM_NIM_DEPLOYMENT_ID: ""
@@ -292,13 +292,13 @@ tasks:
           CONFIG: registered_model
 
   # Optional — requires a manually provisioned NIM deployment (not run in CI).
-  # Set RUN_NIM_E2E=1 and NIM_DEPLOYMENT_ID / LLM_NIM_DEFAULT_MODEL in .env first.
+  # Set RUN_NIM_E2E=1 and LLM_NIM_DEPLOYMENT_ID / LLM_DEFAULT_MODEL in .env first.
   test-e2e:nim-deployed-llm:
     desc: "E2E — NIM deployed LLM (optional, manual NIM required)"
     status:
       - test "$RUN_NIM_E2E" = "1"
     env:
-      USE_DATAROBOT_LLM_GATEWAY: "0"
+      LLM_USE_DATAROBOT_LLM_GATEWAY: "0"
       LLM_DEPLOYMENT_ID: ""
     cmds:
       - task: e2e:run-with-cleanup

@@ -80,8 +80,7 @@ prediction_environment = datarobot.PredictionEnvironment.get(
 )
 app_runtime_parameters = [
     # datarobot-genai resolves LLM settings through the app-prefixed name
-    # (e.g. Config.{{llm_app_name}}_nim_deployment_id -> {{llm_app_name|upper}}_NIM_DEPLOYMENT_ID);
-    # set both so the deployed app resolves regardless of which one a consumer reads.
+    # (e.g. Config.{{llm_app_name}}_nim_deployment_id -> {{llm_app_name|upper}}_NIM_DEPLOYMENT_ID).
     datarobot.ApplicationSourceRuntimeParameterValueArgs(
         key="{{llm_app_name|upper}}_NIM_DEPLOYMENT_ID",
         type="string",
