@@ -33,18 +33,8 @@
 # `pyproject.toml` in the repo is at the root, it is the E2E harness rather than
 # anything a customer renders, and Dependabot resolves it fine.
 #
-# HOW THIS COEXISTS WITH cve-sync. They write to the same two files and do not
-# collide, because they own different keys. cve-sync owns `[tool.uv]`
-# `override-dependencies` and `constraint-dependencies`, which is the CVE floor
-# residue. Dependabot owns `[project]` and `[project.optional-dependencies]`,
-# which is what this repo actually asks for. Both re-lock `uv.lock`. If their
-# branches are open at the same time, whichever merges second rebases: the
-# resync replaces its branch in place on its next scheduled run, and Dependabot
-# rebases its own.
-#
-# The one rule that outranks both: never `uv lock --upgrade` by hand. Version
-# bumps come from a Dependabot pull request or a cve-sync floor, and a free
-# re-resolve breaks the agentic stack.
+# Never `uv lock --upgrade` by hand. Version bumps come from a Dependabot pull
+# request, and a free re-resolve breaks the agentic stack.
 version: 2
 updates:
   # ───────────────────────────────────────────────────────────────────────────
