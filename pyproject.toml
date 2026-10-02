@@ -13,8 +13,6 @@ e2e = [
 ]
 
 [tool.uv]
-# cve-sync:begin
-# cve-sync:waived chromadb>1.5.9 NOT applied -- no-upstream-fix, expires 2026-12-09
 constraint-dependencies = [
     "aiohttp>=3.14.3",
     "anyio>=4.14.2",
@@ -66,7 +64,6 @@ override-dependencies = [
     "opentelemetry-sdk>=1.43.0,<2.0.0",
     "python-dotenv>=1.2.2,<2.0.0",
 ]
-# cve-sync:end
 
 [tool.pytest.ini_options]
 markers = [

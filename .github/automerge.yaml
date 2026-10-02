@@ -10,7 +10,6 @@
 # cause a failing PR to merge.
 #
 # Reference: docs/AUTOMERGE.md in datarobot-oss/github-actions.
-# Wiring cve-sync into this file: the enroll-automerge skill in cve-sync.
 # ─────────────────────────────────────────────────────────────────────────────
 
 version: 1
@@ -19,17 +18,8 @@ version: 1
 # normalization, and a mismatch is SILENT: the PR is not a candidate at all, so
 # it gets no comment and no hand-over.
 #
-# Dependabot enrolled 2026-09-15, cve-sync[bot] 2026-09-16, one at a time so a
-# surprise has an obvious source.
-#
-# cve-sync decides for itself whether a resync is boring enough to carry the
-# `automerge` label at all, reading the uv.lock diff to do it: a major version
-# crossing, a package entering or leaving the resolution, or a removed ceiling
-# all get `00 - Ready for Review` instead. That is upstream of this policy, not
-# a substitute for it.
 allowed_authors:
   - dependabot[bot]
-  - cve-sync[bot]
 
 label: automerge
 
@@ -53,11 +43,6 @@ label: automerge
 # change: mirror the nine E2E secrets into the Dependabot secret store and drop
 # the actor check in afcomponentllm-e2e-test.yaml.
 #
-# On CVE-SYNC PRs it is the real verdict, and that is the whole reason cve-sync
-# is worth enrolling. cve-sync opens its PRs as an ordinary GitHub App, so the
-# secrets resolve and five configurations really deploy against a live
-# DataRobot. Budget the better part of an hour; the polling caller absorbs it.
-#
 # Deliberately absent: `E2E / <configuration>` (leg names move with the matrix,
 # `E2E gate` is their stable alias), `Create Release` (push to main, not
 # pull_request), `backport` (closed PRs).
@@ -70,7 +55,6 @@ expected_checks:
   - "Test Infra (blueprint_with_external_llm)"
   - "Test License"
   - "Check for Windows-incompatible file paths"
-  - "gate / cve-sync gate"
 
 # Refuse when ANY check is failing, including ones neither required nor listed.
 # `skipped` and `neutral` count as a pass.
@@ -87,35 +71,17 @@ block_on_cursor_comments: true
 # timestamps. Its real job is catching a workflow that has not reported yet.
 settle_seconds: 300
 
-# Sized for the larger of the two bots, which is Dependabot: a grouped
-# github-actions bump touches 10 workflows plus the two composite actions under
-# `.github/actions/`, so 16 leaves room. A cve-sync resync is three files at
-# most, because this template ships no `pyproject.toml.jinja` and no pre-baked
-# lock artifacts: there is exactly one resolution root, this repo's own.
+# Sized for a grouped github-actions bump: 10 workflows plus the two composite
+# actions under `.github/actions/`, so 16 leaves room.
 max_changed_files: 16
 
-# The union of what both bots touch. dr-auto-merge has no per-author path rules,
-# so anything either bot needs is allowed for both.
+# What Dependabot's grouped github-actions bump touches. `.github/actions/**`
+# matters because the composite actions pin their own dependencies
+# (setup-caching pins `actions/cache`).
 #
-# cve-sync's half is the first three. `.taskfiles/cve-sync.yml` is the vendored
-# command file the resync rewrites from the upstream definition; it moves only
-# when that definition does, and a run that leaves it out still commits the
-# other two, which is what makes it easy to forget here.
-#
-# Dependabot's half is the `.github/` entries. `.github/actions/**` matters
-# because the composite actions pin their own dependencies (setup-caching pins
-# `actions/cache`) and Dependabot bumps them in the same grouped PR.
-#
-# Listing `pyproject.toml` and `uv.lock` gives up a backstop. This list used to
-# refuse them, which caught a Dependabot Python PR that somebody had hand-
-# labelled `automerge`. cve-sync edits exactly those two files, so it cannot be
-# kept. What replaces it: reaching this policy that way now takes a deliberate
-# human act, and pushing or labelling as a human is what makes the secrets
-# resolve, so `E2E gate` becomes a real check on that PR.
+# `pyproject.toml` and `uv.lock` are deliberately absent: a Dependabot Python PR
+# that somebody hand-labelled `automerge` is refused.
 allowed_paths:
-  - "pyproject.toml"
-  - "uv.lock"
-  - ".taskfiles/cve-sync.yml"
   - ".github/workflows/**"
   - ".github/actions/**"
   - ".github/dependabot.yml"
@@ -132,10 +98,4 @@ merge_method: squash
 # `00 - Ready for Review` puts the PR in the normal review queue. The label is
 # applied with the App token rather than GITHUB_TOKEN, so it also triggers
 # workflow-pr-automation.yaml's Slack ping.
-#
-# cve-sync applies this same label itself, before anything has run, when it
-# decides a change is not one a green check run settles. Same destination, two
-# routes, and a reviewer can tell which by where the reason is: in the PR body
-# means cve-sync refused up front, in a comment means dr-auto-merge gave up
-# after the fact.
 escalate_label: "00 - Ready for Review"
