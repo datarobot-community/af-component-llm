@@ -2,13 +2,23 @@ name: Create Release on Merge to Main
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Create Release on Merge to Main
-# On every push to main, tags the next patch version and cuts a GitHub release.
+# On a push to main, tags the next patch version and cuts a GitHub release, but
+# only when something Copier renders changed since the latest tag. This is a
+# gated release.
+#
+# Every tag here makes Diffington open a sync pull request in every consumer,
+# and each of those runs its own E2E. Merges that only touch tooling (CI, tests,
+# CODEOWNERS, the E2E harness's pyproject.toml and uv.lock) change nothing a
+# consumer renders, so they mint no version and sync nothing downstream.
 # ─────────────────────────────────────────────────────────────────────────────
 # REQUIRED LABELS
 # - None.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Triggered by: every push to main (i.e. a merged PR).
+# Triggered by: every push to main (i.e. a merged PR). Deliberately no `paths:`
+# filter here. The gate compares against the latest tag, so a template change
+# whose release failed is still released by the next merge. A `paths:` filter
+# would not run again until the template moved.
 on:
   push:
     branches: ["main"]
@@ -18,9 +28,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Tag the next patch version and cut a GitHub release.
+  # Tag the next patch version and cut a GitHub release, if the gate opens.
   release:
-    uses: datarobot-oss/github-actions/.github/workflows/create-release-on-merge.yaml@0.0.29
+    uses: datarobot-oss/github-actions/.github/workflows/create-release-on-merge.yaml@0.0.32
     permissions:
       contents: write
       pull-requests: read
+    with:
+      # Everything this repo contributes to a render. copier.yml sets
+      # `_subdirectory: template`, so nothing else at the root is rendered.
+      # `_external_data` reads the CONSUMER's base answers file, not a file
+      # here, so it needs no entry.
+      release_gate_paths: |
+        copier.yml
+        template/**
