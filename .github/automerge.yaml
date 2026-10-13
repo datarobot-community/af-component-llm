@@ -89,7 +89,7 @@ settle_seconds: 300
 
 # Sized for the larger of the two bots, which is Dependabot: a grouped
 # github-actions bump touches 10 workflows plus the two composite actions under
-# `.github/actions/`, so 16 leaves room. A cve-sync resync is three files at
+# `.github/actions/`, so 16 leaves room. A cve-sync resync is four files at
 # most, because this template ships no `pyproject.toml.jinja` and no pre-baked
 # lock artifacts: there is exactly one resolution root, this repo's own.
 max_changed_files: 16
@@ -97,10 +97,11 @@ max_changed_files: 16
 # The union of what both bots touch. dr-auto-merge has no per-author path rules,
 # so anything either bot needs is allowed for both.
 #
-# cve-sync's half is the first three. `.taskfiles/cve-sync.yml` is the vendored
+# cve-sync's half is the first four. `.taskfiles/cve-sync.yml` is the vendored
 # command file the resync rewrites from the upstream definition; it moves only
 # when that definition does, and a run that leaves it out still commits the
-# other two, which is what makes it easy to forget here.
+# other two, which is what makes it easy to forget here. The resync edits
+# `.cve-sync-overrides.toml` when it adds or raises an override.
 #
 # Dependabot's half is the `.github/` entries. `.github/actions/**` matters
 # because the composite actions pin their own dependencies (setup-caching pins
@@ -116,6 +117,7 @@ allowed_paths:
   - "pyproject.toml"
   - "uv.lock"
   - ".taskfiles/cve-sync.yml"
+  - ".cve-sync-overrides.toml"
   - ".github/workflows/**"
   - ".github/actions/**"
   - ".github/dependabot.yml"
