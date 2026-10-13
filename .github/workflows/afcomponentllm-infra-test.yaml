@@ -21,7 +21,7 @@ jobs:
           - deployed_llm
           - blueprint_with_external_llm
     container:
-      image: ghcr.io/astral-sh/uv:python3.11-bookworm
+      image: ghcr.io/astral-sh/uv:python3.11-trixie
     steps:
       - name: Checkout
         uses: "actions/checkout@v7"
