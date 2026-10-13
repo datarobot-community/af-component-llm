@@ -33,8 +33,18 @@
 # `pyproject.toml` in the repo is at the root, it is the E2E harness rather than
 # anything a customer renders, and Dependabot resolves it fine.
 #
-# Never `uv lock --upgrade` by hand. Version bumps come from a Dependabot pull
-# request, and a free re-resolve breaks the agentic stack.
+# HOW THIS COEXISTS WITH cve-sync. They write to the same two files and do not
+# collide, because they own different keys. cve-sync owns `[tool.uv]`
+# `override-dependencies` and `constraint-dependencies`, which is the CVE floor
+# residue. Dependabot owns `[project]` and `[project.optional-dependencies]`,
+# which is what this repo actually asks for. Both re-lock `uv.lock`. If their
+# branches are open at the same time, whichever merges second rebases: the
+# resync replaces its branch in place on its next scheduled run, and Dependabot
+# rebases its own.
+#
+# The one rule that outranks both: never `uv lock --upgrade` by hand. Version
+# bumps come from a Dependabot pull request or a cve-sync floor, and a free
+# re-resolve breaks the agentic stack.
 version: 2
 updates:
   # ───────────────────────────────────────────────────────────────────────────
@@ -104,8 +114,8 @@ updates:
     #
     # `00 - Ready for Review` is the same label a human applies by hand, so
     # these PRs enter the normal review queue rather than sitting in a state
-    # nothing watches. It also means the 30-minute open-PR digest in
-    # workflow-pr-automation.yaml lists them.
+    # nothing watches. It also means review-router.yml's scheduled stale
+    # reminders pick them up.
     #
     # The instant Slack ping that label normally fires does NOT fire here, and
     # that is expected rather than broken: a Dependabot `pull_request` event can
