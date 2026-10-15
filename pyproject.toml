@@ -9,7 +9,7 @@ dependencies = []
 e2e = [
     "pytest>=9.0.3",
     "datarobot>=3.10.0,<4.0.0",
-    "datarobot-genai[crewai,langgraph,llamaindex]>=0.29.42",
+    "datarobot-genai[crewai,langgraph,llamaindex]>=0.29.71",
 ]
 
 [tool.uv]
