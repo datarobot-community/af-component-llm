@@ -130,7 +130,9 @@ llm_custom_model = datarobot.CustomModel(
     target_name="resultText",
     target_type=dr.enums.TARGET_TYPE.TEXT_GENERATION,
     replicas=1,
-    base_environment_id=RuntimeEnvironment(name="[GenAI] Python 3.14 with Moderations").id,
+    base_environment_id=RuntimeEnvironment(
+        name="[GenAI] Python 3.14 with Moderations"
+    ).id,
     use_case_ids=[use_case.id],
     source_llm_blueprint_id=llm_blueprint.id,
     runtime_parameter_values=[],
