@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11, <3.14"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -984,7 +984,7 @@ wheels = [
 
 [[package]]
 name = "datarobot"
-version = "3.19.0"
+version = "3.20.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -1000,9 +1000,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3e/4e/0cc58b5d55c0c50d5c5b464b004afcfee6cfcbbec5b3b8918270470d046b/datarobot-3.19.0.tar.gz", hash = "sha256:5319c45f525ffaf38283468ecae9437fc6ced7969f7dac647253e729f851738c", size = 918779, upload-time = "2026-09-01T12:09:15.358Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/88/d7cf451a28196f5068a82d5cf98aceae8a53ee52789ddc337315d6b3a957/datarobot-3.20.0.tar.gz", hash = "sha256:16e5e07df9737d73735fbbf1a7fce11bfea17f0ab8e479c8a1ec9ed0abd8d75b", size = 1124736, upload-time = "2026-10-15T17:03:50.207Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/f1/dc6a0e6e9a53cc3c7ce98d68d25b9f426f2b342c9ff897c75088aead41c0/datarobot-3.19.0-py3-none-any.whl", hash = "sha256:1631d687689b0fb999c107ba6d3bdb09c73d63c576a4bd8db53329dbd29063ed", size = 995969, upload-time = "2026-09-01T12:09:13.562Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/d8/a225a2146decea612f902ed265e74df3b072dab4fdc058f5a25756702c73/datarobot-3.20.0-py3-none-any.whl", hash = "sha256:e2478c9cc847364da24965c36f41bbbb02b3d884228f69fdf6f61ea125c980e3", size = 1293839, upload-time = "2026-10-15T17:03:48.366Z" },
 ]
 
 [package.optional-dependencies]
@@ -1107,7 +1107,6 @@ dependencies = [
     { name = "aiohttp" },
     { name = "backoff" },
     { name = "click" },
-    { name = "litellm" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "opentelemetry-api" },
@@ -1138,6 +1137,7 @@ all = [
     { name = "langchain-core" },
     { name = "langchain-nvidia-ai-endpoints" },
     { name = "langchain-openai" },
+    { name = "litellm" },
     { name = "llama-index" },
     { name = "llama-index-embeddings-azure-openai" },
     { name = "llama-index-llms-bedrock-converse" },
@@ -3556,7 +3556,6 @@ name = "nemoguardrails"
 version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aiofiles" },
     { name = "aiohttp" },
     { name = "aiohttp-retry" },
     { name = "dataclasses-json" },
@@ -3567,7 +3566,6 @@ dependencies = [
     { name = "lark" },
     { name = "nest-asyncio" },
     { name = "onnxruntime" },
-    { name = "opentelemetry-api" },
     { name = "pandas" },
     { name = "prompt-toolkit" },
     { name = "protobuf" },
