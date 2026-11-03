@@ -79,7 +79,7 @@ jobs:
       #   shell: sh
       #   working-directory: ./rendered
       #   run: |
-      #     uvx --from go-task-bin task infra:test-coverage
+      #     task infra:test-coverage
       #   env:
       #     UV_CACHE_DIR: /.uv_cache
       #     PULUMI_CONFIG_PASSPHRASE: "123"
