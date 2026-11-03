@@ -11,6 +11,11 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: read
+env:
+  # Exact version, so arduino/setup-task skips its anonymous tag lookup on
+  # api.github.com (rate-limited per shared runner IP). Keep in step across repos.
+  TASK_VERSION: "3.50.0"
+
 jobs:
   e2e:
     name: "E2E / ${{ matrix.configuration }}"
@@ -61,6 +66,11 @@ jobs:
     steps:
       - name: Checkout
         uses: "actions/checkout@v7"
+      - name: Install Task
+        uses: arduino/setup-task@v3
+        with:
+          version: ${{ env.TASK_VERSION }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup caching
         uses: ./.github/actions/setup-caching
         with:
@@ -95,7 +105,7 @@ jobs:
           OPENAI_API_VERSION: ${{ secrets.OPENAI_API_VERSION }}
         run: |
           set -euo pipefail
-          uvx --from go-task-bin task ${{ matrix.task }} 2>&1 | tee "e2e-${{ matrix.configuration }}.log"
+          task ${{ matrix.task }} 2>&1 | tee "e2e-${{ matrix.configuration }}.log"
       - name: Tear down E2E resources
         if: always()
         shell: bash
@@ -119,7 +129,7 @@ jobs:
           set -x
           (cd "$infra" && uv run pulumi login --local) || true
           (cd "$infra" && uv run pulumi cancel --yes --stack "$stack") || true
-          (cd "$rendered" && uvx --from go-task-bin task -t Taskfile.yml destroy -- --yes --skip-preview) || true
+          (cd "$rendered" && task -t Taskfile.yml destroy -- --yes --skip-preview) || true
           (cd "$infra" && uv run pulumi stack rm -f -y "$stack") || true
       - name: Upload E2E logs
         if: failure() || cancelled()
