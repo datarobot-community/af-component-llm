@@ -13,6 +13,16 @@ e2e = [
 ]
 
 [tool.uv]
+# exclude-dependencies needs uv >= 0.10.0; older uv ignores the whole table with only a warning.
+required-version = ">=0.10.0"
+# Kept outside the cve-sync markers so a resync leaves it alone.
+exclude-dependencies = [
+    # datarobot-genai pulls llama-index-llms-bedrock-converse[async], whose aioboto3 pins
+    # aiobotocore and caps boto3 < 1.40.62. Patched litellm (>=1.100.4) needs boto3 >= 1.43.
+    # bedrock-converse >= 0.15.3 runs async calls in a thread without it. Same fix as
+    # af-component-agent #748.
+    "aioboto3",
+]
 # cve-sync:begin
 # cve-sync:waived chromadb>1.5.9 NOT applied -- no-upstream-fix, expires 2026-12-09
 constraint-dependencies = [
