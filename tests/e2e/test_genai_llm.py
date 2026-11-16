@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 
 import pytest
 
@@ -53,8 +54,19 @@ def test_langgraph_get_llm() -> None:
 
 @pytest.mark.e2e
 def test_llamaindex_get_llm() -> None:
+    import litellm
+
     from datarobot_genai.llama_index.llm import get_llm
 
-    response = get_llm().complete(SMOKE_PROMPT)
+    llm = get_llm()
+    # TODO (ALIFE-1553): litellm >=1.100 reports a DataRobot 500 as InternalServerError,
+    # which llama-index-llms-litellm does not retry; older litellm raised APIConnectionError,
+    # which it does. Retry once here, as the older stack did, until the retry lives in
+    # datarobot-genai or llama-index. The 500 itself is tracked in ALIFE-1554.
+    try:
+        response = llm.complete(SMOKE_PROMPT)
+    except litellm.InternalServerError:
+        time.sleep(4)
+        response = llm.complete(SMOKE_PROMPT)
     text = getattr(response, "text", None) or str(response)
     assert isinstance(text, str) and text.strip()
