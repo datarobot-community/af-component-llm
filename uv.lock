@@ -881,7 +881,7 @@ wheels = [
 
 [[package]]
 name = "datarobot"
-version = "3.20.0"
+version = "3.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -897,9 +897,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/88/d7cf451a28196f5068a82d5cf98aceae8a53ee52789ddc337315d6b3a957/datarobot-3.20.0.tar.gz", hash = "sha256:16e5e07df9737d73735fbbf1a7fce11bfea17f0ab8e479c8a1ec9ed0abd8d75b", size = 1124736, upload-time = "2026-10-15T17:03:50.207Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/94/9abc7ea81c087aa32dbc8baaf0249ec24ecce5c7a257623be903a579618a/datarobot-3.21.0.tar.gz", hash = "sha256:49a102b08d732921d198bf039ffad87f35536eea1172c7fdfdc3bfb075e806d4", size = 1124627, upload-time = "2026-11-17T20:29:16.244Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/d8/a225a2146decea612f902ed265e74df3b072dab4fdc058f5a25756702c73/datarobot-3.20.0-py3-none-any.whl", hash = "sha256:e2478c9cc847364da24965c36f41bbbb02b3d884228f69fdf6f61ea125c980e3", size = 1293839, upload-time = "2026-10-15T17:03:48.366Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/83/cd55a965bbb0dee05243af68e3e927051367c66f337a3d2ca0d45f49c46a/datarobot-3.21.0-py3-none-any.whl", hash = "sha256:2c0146863fff4818de22a45179692dc37e607e2cd77e39c2baa5abe303adbb44", size = 1293836, upload-time = "2026-11-17T20:29:14.554Z" },
 ]
 
 [package.optional-dependencies]
